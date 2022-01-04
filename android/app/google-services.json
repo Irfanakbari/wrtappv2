@@ -1,0 +1,94 @@
+{
+  "project_info": {
+    "project_number": "775423959688",
+    "firebase_url": "https://world-romance-translation-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "world-romance-translation",
+    "storage_bucket": "world-romance-translation.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:775423959688:android:f16d1015e102e57585353d",
+        "android_client_info": {
+          "package_name": "com.example.wrtappv2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "775423959688-sdllou4t9mq2pk8u7lni49v8sc22mvrl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBUXyWVoQjiEsU4uh_az2vWA4v5K-PiBAA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "775423959688-sdllou4t9mq2pk8u7lni49v8sc22mvrl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:775423959688:android:2a76f5727c67ae6685353d",
+        "android_client_info": {
+          "package_name": "com.example.wrtproject"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "775423959688-4ujjifla4oq2152ik8b7u2jsb684atl7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.wrtproject",
+            "certificate_hash": "82e63033db4101e9468aa47c2a1aea0d8b299413"
+          }
+        },
+        {
+          "client_id": "775423959688-msjhng9e0ih1mgma935cqlos9io0c378.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.wrtproject",
+            "certificate_hash": "e1b37d3a20047d1f7b6a26ee91b504849d54c581"
+          }
+        },
+        {
+          "client_id": "775423959688-tqqootphgf601enbjfkedlc1u3k8bvhr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.wrtproject",
+            "certificate_hash": "edb12716bd7e4b7bdf02706cd89390d5b8dfdcd9"
+          }
+        },
+        {
+          "client_id": "775423959688-sdllou4t9mq2pk8u7lni49v8sc22mvrl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBUXyWVoQjiEsU4uh_az2vWA4v5K-PiBAA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "775423959688-sdllou4t9mq2pk8u7lni49v8sc22mvrl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      },
+      "admob_app_id": "ca-app-pub-2816272273438312~9987056413"
+    }
+  ],
+  "configuration_version": "1"
+}
