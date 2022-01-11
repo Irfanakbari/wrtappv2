@@ -1,8 +1,12 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:get/get_instance/src/extension_instance.dart';
+import 'package:get/get_rx/src/rx_types/rx_types.dart';
+import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as parse;
-import 'package:get/get.dart';
+import 'package:get/route_manager.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -39,46 +43,48 @@ class _DetailPageState extends State<DetailPage> {
   var chapterLink = [];
   var rating = 0.0;
   var postId = "";
-  bool historyStatus = true;
+  var prefs;
+  RxBool historyStatus = true.obs;
   var cover = "";
-  List historyData = [];
+  var historyData = [].obs;
   Rx<MaterialColor> warna = Colors.green.obs;
   var bm = Get.find<BmModel>();
   Rx isBookmark = false.obs;
   Rx<String> bookm = 'Bookmark'.obs;
 
-  getHistory() async {
-    // get history data from shared preferences
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    var history = prefs.getStringList('history' + postId);
-    if (history != null) {
-      historyStatus = false;
-      historyData = history;
-      // convert to datetime and get day ago
-      var date = DateTime.parse(historyData[5]);
-      var difference = DateTime.now().difference(date);
-      if (difference.inSeconds < 60) {
-        historyData[5] = 'Baru Saja';
-      } else if (difference.inMinutes < 60) {
-        historyData[5] = difference.inMinutes.toString() + " minutes ago";
-      } else if (difference.inHours < 24) {
-        historyData[5] = difference.inHours.toString() + " hours ago";
-      } else if (difference.inDays < 30) {
-        historyData[5] = difference.inDays.toString() + " days ago";
-      } else if (difference.inDays < 365) {
-        historyData[5] = difference.inDays.toString() + " months ago";
-      } else if (difference.inDays < 365 * 2) {
-        historyData[5] = difference.inDays.toString() + " years ago";
+  Stream getHistory() async* {
+    while (true) {
+      await Future.delayed(const Duration(seconds: 1));
+      var history = prefs.getStringList('history' + postId);
+      if (history != null) {
+        historyStatus.value = false;
+        historyData.value = history;
+        // convert to datetime and get day ago
+        var date = DateTime.parse(historyData[5]);
+        var difference = DateTime.now().difference(date);
+        if (difference.inSeconds < 60) {
+          historyData[5] = 'Baru Saja';
+        } else if (difference.inMinutes < 60) {
+          historyData[5] = difference.inMinutes.toString() + " minutes ago";
+        } else if (difference.inHours < 24) {
+          historyData[5] = difference.inHours.toString() + " hours ago";
+        } else if (difference.inDays < 30) {
+          historyData[5] = difference.inDays.toString() + " days ago";
+        } else if (difference.inDays < 365) {
+          historyData[5] = difference.inDays.toString() + " months ago";
+        } else if (difference.inDays < 365 * 2) {
+          historyData[5] = difference.inDays.toString() + " years ago";
+        }
+      } else {
+        historyStatus.value = true;
       }
-    } else {
-      historyStatus = true;
+      yield historyData;
     }
   }
 
   scrapData() async {
-    if (widget.url != null) {
-      url = widget.url;
-    }
+    prefs = await SharedPreferences.getInstance();
+    url = widget.url;
     var resp = await http.Client().get(Uri.parse(url));
     var document = parse.parse(resp.body);
     title = document.querySelector('h1.entry-title')!.text;
@@ -184,14 +190,17 @@ class _DetailPageState extends State<DetailPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     scrapData();
   }
 
   @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    Rx warnaApp = const Color.fromRGBO(86, 84, 158, 1).obs;
     // save warna to local storage
 
     double _sigmaX = 10; // from 0-10
@@ -213,14 +222,6 @@ class _DetailPageState extends State<DetailPage> {
                 ),
               ),
             ),
-            actions: <Widget>[
-              IconButton(
-                icon: const Icon(Icons.bookmark_border),
-                onPressed: () {
-                  bookm.value = 'Bookmarked';
-                },
-              ),
-            ],
           ),
           body: _isLoading.value
               ? SizedBox(
@@ -229,14 +230,18 @@ class _DetailPageState extends State<DetailPage> {
                   child: Stack(
                     children: [
                       CachedNetworkImage(
+                        cacheManager: CacheManager(Config(
+                          cover,
+                          stalePeriod: const Duration(hours: 2),
+                        )),
                         width: MediaQuery.of(context).size.width,
                         height: MediaQuery.of(context).size.height,
-                        imageUrl: cover.toString(),
+                        imageUrl: cover.toString() + '?resize=200,325',
                         fit: BoxFit.fill,
-                        placeholder: (context, url) => Container(
+                        placeholder: (context, url) => const SizedBox(
                           width: 130,
                           height: 160,
-                          child: const Center(
+                          child: Center(
                             child: SizedBox(
                               width: 20,
                               height: 20,
@@ -274,16 +279,20 @@ class _DetailPageState extends State<DetailPage> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Container(
+                                    SizedBox(
                                       width: MediaQuery.of(context).size.width *
                                           32 /
                                           100,
                                       height: 200,
                                       child: CachedNetworkImage(
-                                        imageUrl: cover.toString(),
+                                        cacheManager: CacheManager(Config(
+                                          cover,
+                                          stalePeriod: const Duration(hours: 2),
+                                        )),
+                                        imageUrl: cover.toString() +
+                                            '?resize=200,325',
                                         fit: BoxFit.fill,
-                                        placeholder: (context, url) =>
-                                            Container(
+                                        placeholder: (context, url) => SizedBox(
                                           width: MediaQuery.of(context)
                                                   .size
                                                   .width *
@@ -695,7 +704,7 @@ class _DetailPageState extends State<DetailPage> {
                                         const Divider(
                                           color: Colors.grey,
                                         ),
-                                        Container(
+                                        SizedBox(
                                             width: double.infinity,
                                             height: 45,
                                             child: GestureDetector(
@@ -714,60 +723,64 @@ class _DetailPageState extends State<DetailPage> {
                                                                     Colors.grey,
                                                                 width: 1))),
                                                     child: Padding(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              0),
-                                                      child: (historyStatus)
-                                                          ? Row(
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .spaceBetween,
-                                                              children: [
-                                                                Text(
-                                                                  "You have not read any book yet",
-                                                                  style: GoogleFonts.archivoNarrow(
-                                                                      textStyle: const TextStyle(
-                                                                          color: Colors
-                                                                              .grey,
-                                                                          fontWeight: FontWeight
-                                                                              .normal,
-                                                                          fontSize:
-                                                                              14)),
-                                                                )
-                                                              ],
-                                                            )
-                                                          : Row(
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .spaceBetween,
-                                                              children: [
-                                                                Text(
-                                                                  historyData[1]
-                                                                      .toString(),
-                                                                  style: const TextStyle(
-                                                                      color: Colors
-                                                                          .white,
-                                                                      fontSize:
-                                                                          15,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .normal),
-                                                                ),
-                                                                Text(
-                                                                  historyData[5]
-                                                                      .toString(),
-                                                                  style: const TextStyle(
-                                                                      color: Colors
-                                                                          .grey,
-                                                                      fontSize:
-                                                                          14,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .normal),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                    )),
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(0),
+                                                        child: StreamBuilder<
+                                                            dynamic>(
+                                                          stream: getHistory(),
+                                                          builder: (context,
+                                                              snapshot) {
+                                                            return (historyStatus
+                                                                    .value)
+                                                                ? Row(
+                                                                    mainAxisAlignment:
+                                                                        MainAxisAlignment
+                                                                            .spaceBetween,
+                                                                    children: [
+                                                                      Text(
+                                                                        "You have not read any book yet",
+                                                                        style: GoogleFonts.archivoNarrow(
+                                                                            textStyle: const TextStyle(
+                                                                                color: Colors.grey,
+                                                                                fontWeight: FontWeight.normal,
+                                                                                fontSize: 14)),
+                                                                      )
+                                                                    ],
+                                                                  )
+                                                                : Row(
+                                                                    mainAxisAlignment:
+                                                                        MainAxisAlignment
+                                                                            .spaceBetween,
+                                                                    children: [
+                                                                      Text(
+                                                                        snapshot
+                                                                            .data[1]
+                                                                            .toString(),
+                                                                        style: const TextStyle(
+                                                                            color: Colors
+                                                                                .white,
+                                                                            fontSize:
+                                                                                15,
+                                                                            fontWeight:
+                                                                                FontWeight.normal),
+                                                                      ),
+                                                                      Text(
+                                                                        snapshot
+                                                                            .data[5]
+                                                                            .toString(),
+                                                                        style: const TextStyle(
+                                                                            color: Colors
+                                                                                .grey,
+                                                                            fontSize:
+                                                                                14,
+                                                                            fontWeight:
+                                                                                FontWeight.normal),
+                                                                      ),
+                                                                    ],
+                                                                  );
+                                                          },
+                                                        ))),
                                               ),
                                               onTap: () async {},
                                             )),
@@ -879,22 +892,28 @@ class _DetailPageState extends State<DetailPage> {
                                                         ),
                                                         onTap: () async {
                                                           Get.to(
-                                                              ReadingPage(
-                                                                postId: postId,
-                                                                chName: chapterName[
-                                                                        i]
-                                                                    .toString()
-                                                                    .trimLeft(),
-                                                                chLink: chapterLink[
-                                                                        i]
-                                                                    .toString()
-                                                                    .trimLeft(),
-                                                                chImg: cover
-                                                                    .toString(),
-                                                                komikTitle: title
-                                                                    .toString()
-                                                                    .trimLeft(),
-                                                              ),
+                                                              () => ReadingPage(
+                                                                    namelist:
+                                                                        chapterName,
+                                                                    chUrl:
+                                                                        chapterLink,
+                                                                    indx: i,
+                                                                    postId:
+                                                                        postId,
+                                                                    chName: chapterName[
+                                                                            i]
+                                                                        .toString()
+                                                                        .trimLeft(),
+                                                                    chLink: chapterLink[
+                                                                            i]
+                                                                        .toString()
+                                                                        .trimLeft(),
+                                                                    chImg: cover
+                                                                        .toString(),
+                                                                    komikTitle: title
+                                                                        .toString()
+                                                                        .trimLeft(),
+                                                                  ),
                                                               transition:
                                                                   Transition
                                                                       .fadeIn,
@@ -940,15 +959,15 @@ class _DetailPageState extends State<DetailPage> {
                                         const SizedBox(
                                           height: 10,
                                         ),
-                                        Container(
+                                        SizedBox(
                                           width: double.infinity,
                                           child: FlatButton(
                                               onPressed: () {
                                                 Get.to(
-                                                    Disqus(
-                                                      url: url,
-                                                      title: title,
-                                                    ),
+                                                    () => Disqus(
+                                                          url: url,
+                                                          title: title,
+                                                        ),
                                                     transition:
                                                         Transition.downToUp);
                                               },

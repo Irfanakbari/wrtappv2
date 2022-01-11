@@ -1,7 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:get/route_manager.dart';
 import 'package:wrtappv2/Screen/detailpage.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -42,7 +43,7 @@ class LastUpdate extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             // gridview
-            Container(
+            SizedBox(
               width: Get.width,
               child: GridView.count(
                 shrinkWrap: true,
@@ -55,9 +56,10 @@ class LastUpdate extends StatelessWidget {
                   for (int i = 0; i < titleLU.length + 0; i++)
                     GestureDetector(
                       onTap: () {
-                        Get.to(DetailPage(url: linkLU[i]),
-                            transition: Transition.fadeIn,
-                            duration: const Duration(milliseconds: 700));
+                        Get.to(
+                          () => DetailPage(url: linkLU[i]),
+                          transition: Transition.fadeIn,
+                        );
                       },
                       // sizebox size relative to parent
                       child: Padding(
@@ -72,19 +74,21 @@ class LastUpdate extends StatelessWidget {
                                   child: Column(
                                     children: [
                                       CachedNetworkImage(
+                                        cacheKey: imageLU[i],
                                         width: Get.width * 0.3,
                                         height: 165,
+                                        cacheManager: CacheManager(Config(
+                                          imageLU[i],
+                                          stalePeriod: const Duration(hours: 2),
+                                        )),
                                         imageUrl: imageLU[i],
                                         placeholderFadeInDuration:
                                             const Duration(milliseconds: 500),
                                         fit: BoxFit.fill,
                                         placeholder: (context, url) {
                                           // cupertino loader
-                                          return Container(
-                                            child:
-                                                const CupertinoActivityIndicator(
-                                              radius: 10,
-                                            ),
+                                          return const CupertinoActivityIndicator(
+                                            radius: 10,
                                           );
                                         },
                                         errorWidget: (context, url, error) =>

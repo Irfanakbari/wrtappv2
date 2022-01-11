@@ -24,17 +24,16 @@ class _AllKomikState extends State<AllKomik> {
   var _chaptersUrlAll = [].obs;
   var _imageAll = [].obs;
   var _skorAll = [].obs;
+  var loaderB = true.obs;
 
   getData() async {
-    await dataSrc.getAllKomik(1).then((value) {
-      _titleAll.value = dataSrc.titleAll;
-      _chaptersAll.value = dataSrc.chaptersAll;
-      _imageAll.value = dataSrc.imageAll;
-      _skorAll.value = dataSrc.skorAll;
-      _chaptersUrlAll.value = dataSrc.chaptersUrlAll;
-    }).then((value) {
-      isLoading.value = true;
-    });
+    _titleAll.value = dataSrc.titleAll;
+    _chaptersAll.value = dataSrc.chaptersAll;
+    _imageAll.value = dataSrc.imageAll;
+    _skorAll.value = dataSrc.skorAll;
+    _chaptersUrlAll.value = dataSrc.chaptersUrlAll;
+
+    isLoading.value = true;
   }
 
   @override
@@ -45,7 +44,6 @@ class _AllKomikState extends State<AllKomik> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     dataSrc;
   }
@@ -60,9 +58,9 @@ class _AllKomikState extends State<AllKomik> {
         ),
         body: (isLoading.value)
             ? LazyLoadScrollView(
-                isLoading: false,
                 scrollOffset: 200,
                 onEndOfPage: () {
+                  // show loader bottom
                   index++;
                   dataSrc.getAllKomik(index).then((value) {
                     _titleAll.value = dataSrc.titleAll;
@@ -105,11 +103,8 @@ class _AllKomikState extends State<AllKomik> {
                                           imageUrl: _imageAll[i],
                                           placeholder: (context, url) {
                                             // cupertino loader
-                                            return Container(
-                                              child:
-                                                  const CupertinoActivityIndicator(
-                                                radius: 10,
-                                              ),
+                                            return const CupertinoActivityIndicator(
+                                              radius: 10,
                                             );
                                           },
                                           errorWidget: (context, url, error) =>
@@ -164,11 +159,11 @@ class _AllKomikState extends State<AllKomik> {
                                   ),
                                 ],
                               ),
+                              // loader bottom
                             ],
                           ),
                         ),
                       ),
-
                     // card
                   ],
                 ),

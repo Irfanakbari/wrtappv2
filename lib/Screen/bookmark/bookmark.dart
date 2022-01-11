@@ -1,8 +1,8 @@
 // ignore_for_file: unnecessary_const
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wrtappv2/Screen/bookmark/BmModel.dart';
@@ -33,14 +33,12 @@ class _BookmarkPageState extends State<BookmarkPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getBookmark();
   }
 
   @override
   void setState(VoidCallback fn) {
-    // TODO: implement setState
     super.setState(fn);
   }
 
@@ -55,7 +53,7 @@ class _BookmarkPageState extends State<BookmarkPage> {
         body: (!isLoading.value)
             ? (legt.value != 0)
                 ? Center(
-                    child: Container(
+                    child: SizedBox(
                         height: Get.height,
                         child: SingleChildScrollView(
                           child: Column(
@@ -89,7 +87,7 @@ class _BookmarkPageState extends State<BookmarkPage> {
                                         child: Padding(
                                           padding: EdgeInsets.all(8.0),
                                           child: Text(
-                                            "Bookmark Disimpan di Perangkat Anda, Jangan Hapus Data Aplikasi, Untuk Menghapus Bookmark Tekan Dan Tahan Komik",
+                                            "Bookmark Disimpan di Perangkat Anda, Jangan Hapus Data Aplikasi",
                                             style:
                                                 TextStyle(color: Colors.white),
                                           ),
@@ -102,7 +100,7 @@ class _BookmarkPageState extends State<BookmarkPage> {
                                       margin: const EdgeInsets.all(10),
                                       height: Get.height / 1.5,
                                       child: GridView.count(
-                                        physics: BouncingScrollPhysics(),
+                                        physics: const BouncingScrollPhysics(),
                                         crossAxisCount: 3,
                                         childAspectRatio:
                                             (Get.width / Get.height) / 0.8,
@@ -110,7 +108,7 @@ class _BookmarkPageState extends State<BookmarkPage> {
                                           for (int i = 0; i < legt.value; i++)
                                             GestureDetector(
                                               onTap: () {
-                                                Get.to(DetailPage(
+                                                Get.to(() => DetailPage(
                                                     url: dataList[i]['url']));
                                               },
                                               child: Column(
@@ -123,6 +121,15 @@ class _BookmarkPageState extends State<BookmarkPage> {
                                                     child: Column(
                                                       children: [
                                                         CachedNetworkImage(
+                                                          cacheManager:
+                                                              CacheManager(
+                                                                  Config(
+                                                            dataList[i]
+                                                                ['image'],
+                                                            stalePeriod:
+                                                                const Duration(
+                                                                    days: 2),
+                                                          )),
                                                           width:
                                                               Get.width * 0.3,
                                                           height: 175,
@@ -131,7 +138,8 @@ class _BookmarkPageState extends State<BookmarkPage> {
                                                                   milliseconds:
                                                                       500),
                                                           imageUrl: dataList[i]
-                                                              ['image'],
+                                                                  ['image'] +
+                                                              '?resize=300,400',
                                                           placeholder:
                                                               (context, url) =>
                                                                   Container(

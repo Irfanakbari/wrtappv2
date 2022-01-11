@@ -9,6 +9,8 @@ import 'package:wrtappv2/Screen/menupage.dart';
 import 'package:wrtappv2/const/abstract.dart';
 
 class GoogleSignInButton extends StatefulWidget {
+  const GoogleSignInButton({Key? key}) : super(key: key);
+
   @override
   _GoogleSignInButtonState createState() => _GoogleSignInButtonState();
 }
@@ -56,15 +58,18 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
                       } else {
                         Get.offAll(const MenuPage(),
                             transition: Transition.fadeIn,
-                            duration: Duration(milliseconds: 600));
+                            duration: const Duration(milliseconds: 600));
                       }
                     });
                   }
                 } on FirebaseAuthException catch (e) {
-                  print(e.code);
-                  print(e.message);
+                  Get.snackbar(
+                    'Error',
+                    e.message.toString(),
+                    snackPosition: SnackPosition.BOTTOM,
+                    duration: const Duration(seconds: 3),
+                  );
                 }
-                // TODO: Add a method call to the Google Sign-In authentication
               },
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),

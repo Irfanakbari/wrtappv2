@@ -28,7 +28,7 @@ class BmModel {
       });
     }
     Get.snackbar('Bookmark Tersimpan', title,
-        snackPosition: SnackPosition.TOP, duration: Duration(seconds: 2));
+        snackPosition: SnackPosition.TOP, duration: const Duration(seconds: 2));
   }
 
   // cekbookmark
@@ -50,7 +50,7 @@ class BmModel {
         snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.black.withOpacity(0.8),
         colorText: Colors.white,
-        duration: Duration(seconds: 2));
+        duration: const Duration(seconds: 2));
   }
 
   // delete all bookmark
@@ -58,7 +58,7 @@ class BmModel {
     var box = await Hive.openBox('bookmarks');
     box.clear();
     Get.snackbar('Semua Bookmark Dihapus', '',
-        snackPosition: SnackPosition.TOP, duration: Duration(seconds: 2));
+        snackPosition: SnackPosition.TOP, duration: const Duration(seconds: 2));
   }
 
   Future getAllBookmark() async {
@@ -73,6 +73,7 @@ class BmModel {
     var data = box.values.toList();
     var server = RestoreBookmark();
     await server.backupBookmark(data);
-    // print(data);
+    return Get.snackbar("Berhasil", "Data bookmark berhasil diupload ke server",
+        snackPosition: SnackPosition.TOP, duration: const Duration(seconds: 2));
   }
 }

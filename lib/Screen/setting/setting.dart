@@ -2,13 +2,16 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get_instance/src/extension_instance.dart';
+import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
+import 'package:get/route_manager.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wrtappv2/Auth/sys/auth.dart';
 import 'package:wrtappv2/Screen/bookmark/BmModel.dart';
 import 'package:wrtappv2/Screen/reading/sys/ModelRestore.dart';
+import 'package:wrtappv2/Screen/report/report.dart';
 import 'package:wrtappv2/const/abstract.dart';
 import 'package:flutter/cupertino.dart';
 import '../../Auth/login.dart';
@@ -23,9 +26,7 @@ class Setting extends StatelessWidget {
     Auth _auth = Get.find<Auth>();
     var _tema = Get.find<Tema>();
     var _konst = Get.find<Konst>();
-    var dark = false.obs;
     var cons = Get.find<Tema>();
-    Map<String, String> header = {"referer": "https://wrt.my.id"};
     final FirebaseAuth _user = FirebaseAuth.instance;
 
     // scroll controller
@@ -507,12 +508,7 @@ class Setting extends StatelessWidget {
                                 child: const Text("Ya"),
                                 onPressed: () async {
                                   var backup = BmModel();
-                                  backup.saveToServer().then((value) {
-                                    Get.snackbar("Berhasil",
-                                        "Data bookmark berhasil diupload ke server",
-                                        snackPosition: SnackPosition.TOP,
-                                        duration: Duration(seconds: 2));
-                                  });
+                                  backup.saveToServer();
                                   Get.back();
                                 },
                               ),
@@ -551,7 +547,8 @@ class Setting extends StatelessWidget {
                     padding: const EdgeInsets.only(left: 8),
                     child: InkWell(
                       onTap: () {
-                        //  confirm dialog
+                        //  confirm di
+                        // alog
                         Get.dialog(
                           AlertDialog(
                             title: const Text("Konfirmasi"),
@@ -568,17 +565,8 @@ class Setting extends StatelessWidget {
                                 child: const Text("Ya"),
                                 onPressed: () async {
                                   var restoe = RestoreBookmark();
-                                  restoe.getData().then((value) {
-                                    Get.snackbar(
-                                      'Berhasil',
-                                      'Data berhasil dikembalikan',
-                                      snackPosition: SnackPosition.TOP,
-                                      duration: const Duration(seconds: 2),
-                                      margin: const EdgeInsets.all(8),
-                                      animationDuration:
-                                          const Duration(seconds: 1),
-                                    );
-                                  });
+                                  restoe.getData();
+
                                   Get.back();
                                 },
                               ),
@@ -617,41 +605,16 @@ class Setting extends StatelessWidget {
                     padding: const EdgeInsets.only(left: 8),
                     child: InkWell(
                       onTap: () async {
-                        var bm = Get.find<BmModel>();
                         // show confirm dialog cupertino
-                        Get.dialog(
-                          AlertDialog(
-                            title: const Text("Konfirmasi"),
-                            content: const Text(
-                                "Apakah Anda yakin ingin menghapus semua Cache?"),
-                            actions: [
-                              FlatButton(
-                                child: const Text("Tidak"),
-                                onPressed: () {
-                                  Get.back();
-                                },
-                              ),
-                              FlatButton(
-                                child: const Text("Ya"),
-                                onPressed: () async {
-                                  await DefaultCacheManager()
-                                      .emptyCache()
-                                      .then((value) {
-                                    Get.snackbar(
-                                      'Berhasil',
-                                      'Data Cache dihapus',
-                                      snackPosition: SnackPosition.TOP,
-                                      duration: const Duration(seconds: 2),
-                                      margin: const EdgeInsets.all(8),
-                                      animationDuration:
-                                          const Duration(seconds: 1),
-                                    );
-                                  });
-                                  Get.back();
-                                },
-                              ),
-                            ],
-                          ),
+                        await DefaultCacheManager().emptyCache();
+                        CacheImg().clear();
+                        Get.snackbar(
+                          'Berhasil',
+                          'Cache berhasil dihapus',
+                          snackPosition: SnackPosition.TOP,
+                          duration: const Duration(seconds: 2),
+                          margin: const EdgeInsets.all(8),
+                          animationDuration: const Duration(seconds: 1),
                         );
                       },
                       child: Container(
@@ -673,6 +636,40 @@ class Setting extends StatelessWidget {
                                 ),
                                 Text(
                                   "Clear Cache",
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    )),
+                Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: InkWell(
+                      onTap: () async {
+                        Get.to(() => const ReportPage(),
+                            transition: Transition.downToUp);
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        height: 50,
+                        decoration: const BoxDecoration(
+                            border: Border(
+                                bottom: BorderSide(
+                                    color: Colors.grey, width: 0.3))),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: const [
+                                Icon(Icons.report),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                Text(
+                                  "Lapor Bug/Saran",
                                   style: TextStyle(fontSize: 16),
                                 ),
                               ],

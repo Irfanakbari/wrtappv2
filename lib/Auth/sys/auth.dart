@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -6,8 +7,6 @@ import 'package:firebase_core/firebase_core.dart';
 class Auth {
   RxBool isLoggedIn = false.obs;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-
-  var currentUser;
 
   Auth() {
     initializeFirebase();
@@ -20,14 +19,20 @@ class Auth {
       isLoggedIn.value = false;
       return;
     } catch (e) {
-      print(e);
+      Get.snackbar(
+        'Error',
+        'Error signing out',
+        icon: const Icon(
+          Icons.error,
+          color: Colors.red,
+        ),
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
   }
 
   static Future<FirebaseApp> initializeFirebase() async {
     FirebaseApp firebaseApp = await Firebase.initializeApp();
-
-    // TODO: Add auto login logic
 
     return firebaseApp;
   }
@@ -69,18 +74,15 @@ class Auth {
       isLoggedIn.value = true;
       return userCredential.user;
     } catch (e) {
-      print(e);
-    }
-  }
-
-  // sign up with email and password
-  Future<dynamic> signUpWithEmailPassword(String email, String password) async {
-    try {
-      UserCredential userCredential = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(email: email, password: password);
-      return userCredential.user;
-    } catch (e) {
-      print(e);
+      Get.snackbar(
+        'Error',
+        'Error signing in',
+        icon: const Icon(
+          Icons.error,
+          color: Colors.red,
+        ),
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
   }
 }

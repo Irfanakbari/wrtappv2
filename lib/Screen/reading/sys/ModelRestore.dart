@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:get/get.dart';
 import 'package:wrtappv2/Auth/sys/auth.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -10,13 +11,6 @@ class RestoreBookmark {
   // get current user email
   Future<String?> getUserEmail() {
     return user.getEmail();
-  }
-
-  Future<void> restoreBookmark() async {
-    var email = await getUserEmail();
-    final doc = await firestore.collection(email!).doc("bookmark").get();
-    final data = doc.data();
-    final bookmark = data;
   }
 
   // backup bookmark
@@ -50,7 +44,7 @@ class RestoreBookmark {
   }
 
 // get data from firestore
-  Future<void> getData() async {
+  Future getData() async {
     var email = await getUserEmail();
     var datas = await firestore.collection(email!).doc('bookmark').get();
     var src = datas.data();
@@ -62,5 +56,12 @@ class RestoreBookmark {
       // data.add(src[i.toString()]);
       await box.put(src[i.toString()]['id'], src[i.toString()]);
     }
+    return Get.snackbar(
+      'Berhasil',
+      'Data berhasil dikembalikan',
+      snackPosition: SnackPosition.TOP,
+      duration: const Duration(seconds: 2),
+      animationDuration: const Duration(seconds: 1),
+    );
   }
 }

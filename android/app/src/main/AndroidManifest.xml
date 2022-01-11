@@ -10,15 +10,7 @@
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <meta-data android:name="com.onesignal.suppressLaunchURLs" android:value="true"/>
-        <provider
-                android:name="com.ko2ic.imagedownloader.FileProvider"
-                android:authorities="${applicationId}.image_downloader.provider"
-                android:exported="false"
-                android:grantUriPermissions="true">
-            <meta-data
-                    android:name="android.support.FILE_PROVIDER_PATHS"
-                    android:resource="@xml/provider_paths"/>
-        </provider>
+        
         <activity
             android:name=".MainActivity"
             android:exported="true"

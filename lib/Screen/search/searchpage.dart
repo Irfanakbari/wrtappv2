@@ -17,7 +17,7 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
-  var dataSrc = Get.put(ScrapHome());
+  var dataSrc = Get.find<ScrapHome>();
   var isLoading = false.obs;
   var _titleS = [].obs;
   var index = 1;
@@ -54,7 +54,6 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    var teks = "Search Page".obs;
     // text controller
     TextEditingController controller = TextEditingController();
     return Obx(
@@ -62,15 +61,31 @@ class _SearchPageState extends State<SearchPage> {
         appBar: AppBar(
           // search field
           title: TextField(
-            controller: controller,
-            decoration: const InputDecoration(
-              hintText: "Cari apa ya?",
-              border: InputBorder.none,
-            ),
-          ),
+              textInputAction: TextInputAction.search,
+              controller: controller,
+              decoration: const InputDecoration(
+                hintText: "Cari apa ya?",
+                border: InputBorder.none,
+              ),
+              onSubmitted: (context) {
+                index = 1;
+                // clear variable
+                _titleS.value = [];
+                _chaptersS.value = [];
+                _chaptersUrlS.value = [];
+                _imageS.value = [];
+                _skorS.value = [];
+                dataSrc.setTitleS = [];
+                dataSrc.setChaptersS = [];
+                dataSrc.setChaptersUrlS = [];
+                dataSrc.setImageS = [];
+                dataSrc.setSkorS = [];
+
+                getData(controller.text);
+              }),
           actions: [
             IconButton(
-              icon: Icon(Icons.search),
+              icon: const Icon(Icons.search),
               onPressed: () {
                 index = 1;
                 // clear variable
@@ -118,7 +133,7 @@ class _SearchPageState extends State<SearchPage> {
                       for (int i = 0; i < _titleS.length; i++)
                         GestureDetector(
                           onTap: () {
-                            Get.to(DetailPage(url: _chaptersUrlS[i]),
+                            Get.to(() => DetailPage(url: _chaptersUrlS[i]),
                                 transition: Transition.fadeIn,
                                 duration: const Duration(milliseconds: 700));
                           },
@@ -139,11 +154,8 @@ class _SearchPageState extends State<SearchPage> {
                                             imageUrl: _imageS[i],
                                             placeholder: (context, url) {
                                               // cupertino loader
-                                              return Container(
-                                                child:
-                                                    const CupertinoActivityIndicator(
-                                                  radius: 10,
-                                                ),
+                                              return const CupertinoActivityIndicator(
+                                                radius: 10,
                                               );
                                             },
                                             errorWidget:

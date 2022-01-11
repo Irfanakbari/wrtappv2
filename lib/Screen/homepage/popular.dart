@@ -1,7 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:get/route_manager.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wrtappv2/Screen/detailpage.dart';
@@ -12,8 +13,15 @@ class Popular extends StatelessWidget {
   final image;
   final skor;
   final chapters;
+  final hot;
   const Popular(
-      {Key? key, this.title, this.url, this.image, this.skor, this.chapters})
+      {Key? key,
+      this.title,
+      this.url,
+      this.image,
+      this.skor,
+      this.chapters,
+      this.hot})
       : super(key: key);
 
   @override
@@ -38,7 +46,7 @@ class Popular extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             // gridview
-            Container(
+            SizedBox(
               width: Get.width,
               child: GridView.count(
                 shrinkWrap: true,
@@ -50,9 +58,10 @@ class Popular extends StatelessWidget {
                   for (int i = 0; i < 6; i++)
                     GestureDetector(
                       onTap: () {
-                        Get.to(DetailPage(url: url[i]),
-                            transition: Transition.fadeIn,
-                            duration: const Duration(milliseconds: 700));
+                        Get.to(
+                          () => DetailPage(url: url[i]),
+                          transition: Transition.fadeIn,
+                        );
                       },
                       child: Padding(
                         padding: const EdgeInsets.all(3),
@@ -65,22 +74,35 @@ class Popular extends StatelessWidget {
                                   flex: 8,
                                   child: Column(
                                     children: [
-                                      CachedNetworkImage(
-                                        // width: 225,
-                                        height: 175,
-                                        imageUrl: image[i],
-                                        placeholder: (context, url) {
-                                          // cupertino loader
-                                          return Container(
-                                            child:
-                                                const CupertinoActivityIndicator(
+                                      Stack(children: [
+                                        CachedNetworkImage(
+                                          cacheKey: image[i],
+                                          cacheManager: CacheManager(Config(
+                                            image[i],
+                                            stalePeriod:
+                                                const Duration(hours: 2),
+                                          )),
+                                          height: 175,
+                                          imageUrl: image[i],
+                                          placeholder: (context, url) {
+                                            // cupertino loader
+                                            return const CupertinoActivityIndicator(
                                               radius: 10,
-                                            ),
-                                          );
-                                        },
-                                        errorWidget: (context, url, error) =>
-                                            const Icon(Icons.error),
-                                      )
+                                            );
+                                          },
+                                          errorWidget: (context, url, error) =>
+                                              const Icon(Icons.error),
+                                        ),
+                                        Positioned(
+                                          top: 5,
+                                          left: 5,
+                                          child: SizedBox(
+                                              width: 30,
+                                              height: 30,
+                                              child: Image.asset(
+                                                  'assets/img/manga.png')),
+                                        ),
+                                      ])
                                     ],
                                   ),
                                 ),

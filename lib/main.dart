@@ -16,6 +16,7 @@ import 'package:connectivity/connectivity.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  await Hive.initFlutter();
   var _konst = Get.put(Konst());
   _konst.initPlatformState();
   _konst.blockOrientation();
@@ -29,19 +30,20 @@ void main() async {
   } else if (status == 3) {
     Tema().mode.value = 3;
   }
-  Get.put(ScrapHome());
-  await Hive.initFlutter();
+  var home = Get.put(ScrapHome());
+  await home.getData();
+  await home.getAllKomik(1);
   notifCek();
-  var subscription =
-      Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
+
+  Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
     if (result == ConnectivityResult.none) {
       Get.snackbar(
           'No Internet Connection', 'Please check your internet connection',
           snackPosition: SnackPosition.TOP,
           borderRadius: 10,
-          margin: EdgeInsets.all(10),
+          margin: const EdgeInsets.all(10),
           borderWidth: 1,
-          duration: Duration(seconds: 5));
+          duration: const Duration(seconds: 5));
     }
   });
 
@@ -50,12 +52,14 @@ void main() async {
 
 // stream connectivity
 class MyApp extends StatelessWidget {
-  final Auth _put = Get.put(Auth());
+  final Auth put = Get.put(Auth());
   final Tema _tema = Get.put(Tema());
-  final BmModel _bm = Get.put(BmModel());
-  final Konst _konst = Get.find<Konst>();
+  final BmModel bm = Get.put(BmModel());
+  final Konst konst = Get.find<Konst>();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final Auth at = Auth();
+
+  MyApp({Key? key}) : super(key: key);
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {

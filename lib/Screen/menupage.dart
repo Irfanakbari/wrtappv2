@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:wrtappv2/Screen/all/allkomik.dart';
 import 'package:wrtappv2/Screen/allgenres/genres.dart';
 import 'package:wrtappv2/Screen/bookmark/bookmark.dart';
-import 'package:wrtappv2/Screen/detailpage.dart';
 import 'package:wrtappv2/Screen/homepage.dart';
 import 'package:wrtappv2/Screen/setting/setting.dart';
 import 'package:double_back_to_close_app/double_back_to_close_app.dart';

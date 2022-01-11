@@ -1,12 +1,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class Disqus extends StatefulWidget {
-  final url;
-  final title;
-  const Disqus({Key? key, this.url, this.title}) : super(key: key);
+  final String url;
+  final String title;
+  const Disqus({Key? key, required this.url, required this.title})
+      : super(key: key);
 
   @override
   _DisqusState createState() => _DisqusState();
@@ -14,11 +14,9 @@ class Disqus extends StatefulWidget {
 
 class _DisqusState extends State<Disqus> {
   String urll = "";
-  double _height = 1;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     if (Platform.isAndroid) {
       AndroidInAppWebViewController.setWebContentsDebuggingEnabled(true);
@@ -40,16 +38,14 @@ class _DisqusState extends State<Disqus> {
         ios: IOSInAppWebViewOptions(
           allowsInlineMediaPlayback: true,
         ));
-    final urlController = TextEditingController();
-    RefreshController _refreshController =
-        RefreshController(initialRefresh: false);
+
     String urls = 'https://disqus.wrt.my.id/disqus.php/?shortname=wrt1&url=' +
         widget.url +
         '&title=' +
         widget.title;
     return Scaffold(
         appBar: AppBar(
-          title: Text('Disqus'),
+          title: const Text('Disqus'),
         ),
         body: InAppWebView(
           key: webViewKey,

@@ -12,7 +12,7 @@ class Tema {
 
   getDark() async {
     var prefs = await SharedPreferences.getInstance();
-    var darkModeOn = await prefs.getInt('tema') ?? 0;
+    var darkModeOn = prefs.getInt('tema') ?? 0;
     if (darkModeOn == 0) {
       mode.value = 0;
     } else if (darkModeOn == 1) {

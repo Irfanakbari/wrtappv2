@@ -10,7 +10,7 @@ class CloseApp extends StatelessWidget {
       backgroundColor: Colors.white,
       body: Center(
         child: Padding(
-          padding: EdgeInsets.all(10),
+          padding: const EdgeInsets.all(10),
           child: Text(
             message,
             style: const TextStyle(fontSize: 20, color: Colors.red),

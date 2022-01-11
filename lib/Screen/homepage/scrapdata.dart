@@ -37,15 +37,42 @@ class ScrapHome {
   var _imageS = [].obs;
   var _skorS = [].obs;
 
+  // genredata
+  var _titleG = [].obs;
+  var _chaptersG = [].obs;
+  var _chapters_urlG = [].obs;
+  var _imageG = [].obs;
+  var _skorG = [].obs;
+
+  // newer komik
+  var _titleNK = [].obs;
+  var _genreNK = [].obs;
+  var _yearNK = [].obs;
+  var _imageNK = [].obs;
+  var _urlNK = [].obs;
+
   var url = 'https://wrt.my.id/';
 
-  ScrapHome() {
-    getData();
-    getDataPj();
-    getDataLastUpdate();
+  Future<void> delData() async {
+    title.clear();
+
+    chapters.clear();
+    chaptersUrl.clear();
+    image.clear();
+    skor.clear();
+    titlePj.clear();
+    chaptersPj.clear();
+    chaptersUrlPj.clear();
+    imagePj.clear();
+    titleLU.clear();
+    chaptersLU.clear();
+    chaptersUrlLU.clear();
+    imageLU.clear();
+    timeLU.clear();
   }
 
   Future<void> getData() async {
+    await delData();
     var response = await http.get(Uri.parse(url));
     var document = parse.parse(response.body);
     var core = document.getElementsByClassName('hothome')[0];
@@ -54,6 +81,7 @@ class ScrapHome {
     var chaptersUrl = core.getElementsByTagName('a');
     var image = core.getElementsByTagName('img');
     var skor = core.getElementsByClassName('numscore');
+
     for (var i = 0; i < title.length - 1; i++) {
       _title.add(title[i].text.trimLeft().toString());
       _chapters.add(chapters[i].text);
@@ -61,6 +89,9 @@ class ScrapHome {
       _image.add(image[i].attributes['src']);
       _skor.add(skor[i].text);
     }
+    await getDataPj();
+    await getDataLastUpdate();
+    await getNewerKomik();
   }
 
   Future<void> getDataPj() async {
@@ -143,6 +174,29 @@ class ScrapHome {
     }
   }
 
+  Future<void> genreResult(String url) async {
+    var response = await http.get(Uri.parse(url));
+    var document = parse.parse(response.body);
+    var core = document.getElementsByClassName('bs');
+    for (var i = 0; i < core.length; i++) {
+      _titleG.add(
+          core[i].getElementsByClassName('tt')[0].text.toString().trimLeft());
+
+      _chaptersG.add(core[i]
+          .getElementsByClassName('adds')[0]
+          .getElementsByClassName('epxs')[0]
+          .text);
+
+      _chapters_urlG.add(core[i]
+          .getElementsByClassName('bsx')[0]
+          .getElementsByTagName('a')[0]
+          .attributes['href']);
+
+      _imageG.add(core[i].getElementsByTagName('img')[0].attributes['src']);
+      _skorG.add(core[i].getElementsByClassName('numscore')[0].text);
+    }
+  }
+
   Future<void> searchKomik(String keyword, int page) async {
     var url = 'https://wrt.my.id/page/' + page.toString() + '?s=' + keyword;
     var response = await http.get(Uri.parse(url));
@@ -151,7 +205,6 @@ class ScrapHome {
     for (var i = 0; i < core.length; i++) {
       _titleS.add(
           core[i].getElementsByClassName('tt')[0].text.toString().trimLeft());
-      print(core);
 
       _chaptersS.add(core[i]
           .getElementsByClassName('adds')[0]
@@ -167,6 +220,34 @@ class ScrapHome {
       _skorS.add(core[i].getElementsByClassName('numscore')[0].text);
     }
     // print(_titleS);
+  }
+
+  Future<void> getNewerKomik() async {
+    _titleNK.clear();
+    _genreNK.clear();
+    _yearNK.clear();
+    _imageNK.clear();
+    var response = await http.get(Uri.parse(url));
+    var document = parse.parse(response.body);
+    var core = document.getElementsByClassName('serieslist')[3];
+    var core2 = core.getElementsByClassName('leftseries');
+    var core3 = core.getElementsByClassName('imgseries');
+
+    for (var i = 0; i < core2.length; i++) {
+      _titleNK.add(core2[i]
+          .getElementsByClassName('series')[0]
+          .text
+          .toString()
+          .trimLeft());
+      _genreNK.add(
+          core2[i].getElementsByTagName('span')[0].text.toString().trimLeft());
+      _yearNK.add(
+          core2[i].getElementsByTagName('span')[1].text.toString().trimLeft());
+    }
+    for (var i = 0; i < core3.length; i++) {
+      _urlNK.add(core3[i].getElementsByTagName('a')[0].attributes['href']);
+      _imageNK.add(core3[i].getElementsByTagName('img')[0].attributes['src']);
+    }
   }
 
   // Getter popular
@@ -209,4 +290,18 @@ class ScrapHome {
   set setChaptersUrlS(List chaptersUrl) => _chapters_urlS.value = chaptersUrl;
   set setImageS(List image) => _imageS.value = image;
   set setSkorS(List skor) => _skorS.value = skor;
+
+  // getter genre result
+  List get titleG => _titleG;
+  List get chaptersG => _chaptersG;
+  List get chaptersUrlG => _chapters_urlG;
+  List get imageG => _imageG;
+  List get skorG => _skorG;
+
+  // getter newer komik
+  List get titleNK => _titleNK;
+  List get genreNK => _genreNK;
+  List get yearNK => _yearNK;
+  List get imageNK => _imageNK;
+  List get urlNK => _urlNK;
 }

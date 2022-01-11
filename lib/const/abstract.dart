@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -10,9 +10,9 @@ import 'package:wrtappv2/ErrorPage/iderror.dart';
 import 'package:wrtappv2/ErrorPage/update.dart';
 import 'package:wrtappv2/Screen/detailpage.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
-import 'package:unique_identifier/unique_identifier.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
+import 'package:device_info_plus/device_info_plus.dart';
 
 class Konst {
   Rx readQuality = "100".obs;
@@ -20,12 +20,17 @@ class Konst {
   Rx isLoading = false.obs;
   RxBool notifStatus = false.obs;
   Rx identifier = "".obs;
+  Rx merk = "".obs;
+  Rx model = "".obs;
+  Rx hardware = "".obs;
+  Rx osVersion = "".obs;
+  Rx apiVersion = "".obs;
   RxBool statusID = true.obs;
   var user = Auth();
   Rx versi = "".obs;
+  static final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
 
   Konst() {
-    DefaultCacheManager().emptyCache();
     initUniqueIdentifierState();
     getQualityRead();
   }
@@ -45,14 +50,14 @@ class Konst {
     OneSignal.shared.setAppId("be7dac02-14fd-470f-bf7d-5ba24e08bdd2");
     OneSignal.shared
         .setNotificationOpenedHandler((OSNotificationOpenedResult result) {
-      if (result.notification.launchUrl!.contains('komik')) {
+      if (result.notification.launchUrl!.contains('manga')) {
         Future.delayed(const Duration(milliseconds: 1000), () {
           Get.to(DetailPage(url: result.notification.launchUrl.toString()));
         });
       } else {
         var url = result.notification.launchUrl.toString();
         url = url.substring(url.indexOf(".id/") + 4);
-        url = "https://wrt.my.id/komik/$url";
+        url = "https://wrt.my.id/manga/$url";
         // get before -chapter-
         url = url.substring(0, url.indexOf("-chapter-"));
         Get.to(DetailPage(url: url));
@@ -62,7 +67,14 @@ class Konst {
 
   Future<void> initUniqueIdentifierState() async {
     try {
-      identifier.value = (await UniqueIdentifier.serial)!;
+      await deviceInfoPlugin.androidInfo.then((value) {
+        identifier.value = value.androidId;
+        merk.value = value.manufacturer;
+        model.value = value.model;
+        hardware.value = value.hardware;
+        osVersion.value = value.version.release;
+        apiVersion.value = value.version.sdkInt.toString();
+      });
     } on PlatformException {
       identifier.value = 'Failed to get Unique Identifier';
     }
@@ -77,28 +89,41 @@ class Konst {
 
   Future validationDeviceID() async {
     FirebaseFirestore server = FirebaseFirestore.instance;
+
     var email = await getUserEmail();
+    var _idAtServer = await server.collection(email!).doc("device").get();
+    await server.collection(email).doc("type").set({
+      "deviceType": "Android",
+      "merk": merk.value,
+      "model": model.value,
+      "hardware": hardware.value,
+      "osVersion": osVersion.value,
+    });
     if (await server
-        .collection(email!)
+        .collection(email)
         .doc('device')
         .get()
         .then((value) => value.exists)) {
-      var _idAtServer = await server.collection(email).doc("device").get();
       await initUniqueIdentifierState().then((_) {
         if (_idAtServer.data()!['deviceID'] == identifier.value) {
           statusID.value = false;
         } else {
           statusID.value = true;
+          Get.off(const IdError());
         }
       });
-      if (statusID.value) {
-        Get.off(const IdError());
-      }
     } else {
       var _idAtServerSet = server.collection(email).doc("device");
       await initUniqueIdentifierState().then((_) {
         _idAtServerSet.set({
           'deviceID': identifier.value,
+        }).then((value) {
+          if (_idAtServer.data()!['deviceID'] == identifier.value) {
+            statusID.value = false;
+          } else {
+            statusID.value = true;
+            Get.off(const IdError());
+          }
         });
       });
     }
@@ -143,5 +168,130 @@ class Konst {
     if (status == "off") {
       Get.offAll(CloseApp(message: message));
     }
+  }
+
+  Future<void> sendReport(String message) async {
+    var url =
+        "https://discord.com/api/webhooks/930338967822422016/MOXMqhVzDlXFIj1Kz4W8RK_Tr02M9_g_MLZZxxGWMBYIhEwcih13jZfpBp3Ne0xJs9tO";
+    var response = await http.post(Uri.parse(url),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: json.encode({
+          "username": "Yui-Chan",
+          "avatar_url":
+              "https://i.pinimg.com/originals/75/69/61/756961cc572e9143995190252e851124.jpg",
+          "content": message,
+          "embeds": [
+            {
+              "title": "Device Detail",
+              "description": "Brand : " +
+                  merk.value +
+                  "\n" +
+                  "Model : " +
+                  model.value +
+                  "\n" +
+                  "Chipset : " +
+                  hardware.value +
+                  "\n" +
+                  "OS Version : Android " +
+                  osVersion.value +
+                  "\n" +
+                  "API Version : " +
+                  apiVersion.value +
+                  "\n",
+              "color": 0xFF00FF,
+              "footer": {
+                "text": "With Love Yui-Chan",
+                "icon_url":
+                    "https://i.pinimg.com/originals/75/69/61/756961cc572e9143995190252e851124.jpg"
+              }
+            }
+          ]
+        }));
+    if (response.statusCode == 200 || response.statusCode == 204) {
+      Get.snackbar(
+        "Report",
+        "Report has been sent",
+        icon: const Icon(
+          Icons.check_circle,
+          color: Colors.green,
+        ),
+        snackPosition: SnackPosition.TOP,
+      );
+    } else {
+      Get.snackbar(
+        "Report",
+        "Report failed to send",
+        icon: const Icon(
+          Icons.error,
+          color: Colors.red,
+        ),
+        snackPosition: SnackPosition.TOP,
+      );
+    }
+  }
+
+  Future<void> sendChapterReport(String urll) async {
+    // get ip address
+    var ip = await http.get(Uri.parse("https://api.ipify.org"));
+    var ipAddress = ip.body;
+    var url2 = "http://ip-api.com/json/" + ipAddress;
+    var response2 = await http.get(Uri.parse(url2));
+    var data2 = await json.decode(response2.body);
+    var isp = data2['isp'].toString();
+
+    var url =
+        "https://discord.com/api/webhooks/930339315609911337/7ttcd5pdJyc4AwUNFSFdzKERBOL9sDDsAG1HSYJbSiAE36UHjisaFgDT8873rdZQe7pB";
+    var response = await http.post(Uri.parse(url),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: json.encode({
+          "username": "Yui-Chan",
+          "avatar_url":
+              "https://i.pinimg.com/originals/75/69/61/756961cc572e9143995190252e851124.jpg",
+          "content": "",
+          "embeds": [
+            {
+              "title": "Chapter Report",
+              "description": "URL : " + urll + "\n" + "ISP : " + isp + "\n",
+              "color": 0xFF00FF,
+              "footer": {
+                "text": "With Love Yui-Chan",
+                "icon_url":
+                    "https://i.pinimg.com/originals/75/69/61/756961cc572e9143995190252e851124.jpg"
+              }
+            }
+          ]
+        }));
+    if (response.statusCode == 200 || response.statusCode == 204) {
+      Get.snackbar(
+        "Report",
+        "Report has been sent",
+        icon: const Icon(
+          Icons.check_circle,
+          color: Colors.green,
+        ),
+        snackPosition: SnackPosition.TOP,
+      );
+    } else {
+      Get.snackbar(
+        "Report",
+        "Report failed to send",
+        icon: const Icon(
+          Icons.error,
+          color: Colors.red,
+        ),
+        snackPosition: SnackPosition.TOP,
+      );
+    }
+  }
+}
+
+class CacheImg extends ImageCache {
+  @override
+  void clear() {
+    super.clear();
   }
 }
