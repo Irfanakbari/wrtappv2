@@ -87,6 +87,7 @@ class _HomePageState extends State<HomePage> {
     konst.getStatusServer();
     konst.validationDeviceID();
     konst.cekUpdate();
+    konst.setStatusAccount();
   }
 
   @override

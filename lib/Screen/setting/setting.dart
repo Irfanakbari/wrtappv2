@@ -58,72 +58,129 @@ class Setting extends StatelessWidget {
                     width: Get.width,
                     decoration: const BoxDecoration(),
                     child: Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.only(
+                          left: 8, right: 0, top: 8, bottom: 8),
                       child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          (_user.currentUser!.photoURL != null)
-                              ? Container(
-                                  width: 50,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    image: DecorationImage(
-                                      image: CachedNetworkImageProvider(_user
-                                          .currentUser!.photoURL
-                                          .toString()),
-                                      fit: BoxFit.cover,
-                                    ),
-                                    shape: BoxShape.circle,
-                                  ),
-                                )
-                              : Container(
-                                  width: 50,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    image: const DecorationImage(
-                                      image: CachedNetworkImageProvider(
-                                          'https://cdn3.wrt.my.id/wrt.my.id/08/12/PinClipart.com_male-clipart_1332472.png'),
-                                      fit: BoxFit.cover,
-                                    ),
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                        color: Colors.grey, width: 1),
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                          const SizedBox(
-                            width: 20,
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          Row(
                             children: [
-                              // google font
-                              Text(
-                                // first word capital
-                                _user.currentUser!.displayName
-                                    .toString()
-                                    .split(" ")
-                                    .map((e) =>
-                                        e[0].toUpperCase() + e.substring(1))
-                                    .join(" "),
-
-                                style: GoogleFonts.roboto(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
+                              (_user.currentUser!.photoURL != null)
+                                  ? Container(
+                                      width: 60,
+                                      height: 60,
+                                      decoration: BoxDecoration(
+                                        image: DecorationImage(
+                                          image: CachedNetworkImageProvider(
+                                              _user.currentUser!.photoURL
+                                                  .toString()),
+                                          fit: BoxFit.cover,
+                                        ),
+                                        shape: BoxShape.circle,
+                                      ),
+                                    )
+                                  : Container(
+                                      width: 60,
+                                      height: 60,
+                                      decoration: BoxDecoration(
+                                        image: const DecorationImage(
+                                          image: CachedNetworkImageProvider(
+                                              'https://cdn3.wrt.my.id/wrt.my.id/08/12/PinClipart.com_male-clipart_1332472.png'),
+                                          fit: BoxFit.cover,
+                                        ),
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                            color: Colors.grey, width: 1),
+                                        color: Colors.grey,
+                                      ),
+                                    ),
                               const SizedBox(
-                                height: 5,
+                                width: 20,
                               ),
-                              Text(
-                                _user.currentUser!.email.toString(),
-                                style: const TextStyle(fontSize: 14),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // google font
+                                  Text(
+                                    // first word capital
+                                    _user.currentUser!.displayName
+                                        .toString()
+                                        .split(" ")
+                                        .map((e) =>
+                                            e[0].toUpperCase() + e.substring(1))
+                                        .join(" "),
+
+                                    style: GoogleFonts.roboto(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 3,
+                                  ),
+                                  (_konst.premiumStatus.value)
+                                      ? Container(
+                                          margin: const EdgeInsets.only(
+                                              top: 0, bottom: 3),
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(5),
+                                            color: const Color.fromARGB(
+                                                255, 255, 196, 0),
+                                          ),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(4.0),
+                                            child: Row(
+                                              children: [
+                                                const Icon(MdiIcons.crown,
+                                                    size: 18),
+                                                const SizedBox(
+                                                  width: 5,
+                                                ),
+                                                Text("Premium Member",
+                                                    style: GoogleFonts.roboto(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    )),
+                                              ],
+                                            ),
+                                          ),
+                                        )
+                                      : Container(),
+                                  Text(
+                                    _user.currentUser!.email.toString(),
+                                    style: const TextStyle(fontSize: 16),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
+                          Row(
+                            children: [
+                              ElevatedButton(
+                                style: ButtonStyle(
+                                    backgroundColor: MaterialStateProperty.all(
+                                        Colors.green)),
+                                onPressed: () async {
+                                  _konst.midtrans?.startPaymentUiFlow(
+                                      token: await _konst.getSNAPKey());
+                                },
+                                child: const Text(
+                                  "Top Up",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            ],
+                          )
                         ],
                       ),
                     ),
                   ),
+                ),
+
+                const SizedBox(
+                  height: 10,
                 ),
 
                 const Text(

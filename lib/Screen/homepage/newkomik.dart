@@ -60,7 +60,12 @@ class _NewerKomikState extends State<NewerKomik> {
                           padding: const EdgeInsets.only(bottom: 20),
                           child: Row(
                             children: [
-                              Image.network(widget.image[i], fit: BoxFit.cover),
+                              Image.network(
+                                widget.image[i],
+                                fit: BoxFit.cover,
+                                height: 85,
+                                width: 65,
+                              ),
                               const SizedBox(width: 10),
                               Expanded(
                                 child: Column(
