@@ -18,12 +18,12 @@ class AllKomik extends StatefulWidget {
 class _AllKomikState extends State<AllKomik> {
   var isLoading = false.obs;
   var dataSrc = Get.find<ScrapHome>();
-  var _titleAll = [].obs;
+  final _titleAll = [].obs;
   var index = 1;
-  var _chaptersAll = [].obs;
-  var _chaptersUrlAll = [].obs;
-  var _imageAll = [].obs;
-  var _skorAll = [].obs;
+  final _chaptersAll = [].obs;
+  final _chaptersUrlAll = [].obs;
+  final _imageAll = [].obs;
+  final _skorAll = [].obs;
   var loaderB = true.obs;
 
   getData() async {

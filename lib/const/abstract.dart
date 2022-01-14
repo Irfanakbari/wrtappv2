@@ -31,8 +31,9 @@ class Konst {
   RxBool statusID = true.obs;
   var user = Auth();
   Rx versi = "".obs;
-  RxBool premiumStatus = false.obs;
-  Rx<DateTime> expPremium = DateTime.now().obs;
+  var topUpAmount = 0.obs;
+  var premiumStatus = false.obs;
+  var expPremium = DateTime.now().obs;
   static final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
   FirebaseFirestore server = FirebaseFirestore.instance;
 
@@ -82,21 +83,6 @@ class Konst {
     midtrans?.setUIKitCustomSetting(
       skipCustomerDetailsPages: true,
     );
-    midtrans!.setTransactionFinishedCallback((result) async {
-      if (!result.isTransactionCanceled) {
-        await topUpAccount();
-      } else {
-        Get.snackbar(
-          "Pembayaran Gagal",
-          "Pembayaran dibatalkan",
-          icon: const Icon(
-            Icons.error,
-            color: Colors.white,
-          ),
-          duration: const Duration(seconds: 3),
-        );
-      }
-    });
   }
 
   Future<void> initUniqueIdentifierState() async {
@@ -119,6 +105,27 @@ class Konst {
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
+  }
+
+  Future bayar(int total) async {
+    midtrans!.setTransactionFinishedCallback((result) async {
+      if (!result.isTransactionCanceled) {
+        await topUpAccount(total);
+      } else {
+        Get.snackbar(
+          "Pembayaran Gagal",
+          "Pembayaran dibatalkan",
+          icon: const Icon(
+            Icons.error,
+            color: Colors.white,
+          ),
+          duration: const Duration(seconds: 3),
+        );
+      }
+    });
+    midtrans?.startPaymentUiFlow(
+      token: await getSNAPKey(),
+    );
   }
 
   Future getSNAPKey() async {
@@ -187,7 +194,7 @@ class Konst {
     return snapToken;
   }
 
-  Future topUpAccount() async {
+  Future topUpAccount(int total) async {
     var email = await getUserEmail();
     var data = await server.collection(email!).doc("premium").get();
 
@@ -200,16 +207,22 @@ class Konst {
           ? await server.collection(email).doc("premium").update({
               "expired": (await data.data()!["expired"] as Timestamp)
                   .toDate()
-                  .add(const Duration(days: 7)),
+                  .add(Duration(days: total)),
               "status": true,
             })
           : await server.collection(email).doc("premium").update({
-              "expired": DateTime.now().add(const Duration(days: 7)),
-              "status": false,
+              "expired": DateTime.now().add(Duration(days: total)),
+              "status": true,
             });
       premiumStatus.value = true;
       expPremium.value = (await data.data()!["expired"] as Timestamp).toDate();
     } else {
+      await server.collection(email).doc("premium").update({
+        "expired": (await data.data()!["expired"] as Timestamp)
+            .toDate()
+            .add(Duration(days: total)),
+        "status": true,
+      });
       premiumStatus.value = false;
       expPremium.value = (await data.data()!["expired"] as Timestamp).toDate();
     }
@@ -453,8 +466,4 @@ class Konst {
 }
 
 class CacheImg extends ImageCache {
-  @override
-  void clear() {
-    super.clear();
-  }
 }

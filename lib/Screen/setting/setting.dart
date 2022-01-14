@@ -10,6 +10,7 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wrtappv2/Auth/sys/auth.dart';
 import 'package:wrtappv2/Screen/bookmark/BmModel.dart';
+import 'package:wrtappv2/Screen/membership/buypage.dart';
 import 'package:wrtappv2/Screen/reading/sys/ModelRestore.dart';
 import 'package:wrtappv2/Screen/report/report.dart';
 import 'package:wrtappv2/const/abstract.dart';
@@ -137,7 +138,17 @@ class Setting extends StatelessWidget {
                                                 const SizedBox(
                                                   width: 5,
                                                 ),
-                                                Text("Premium Member",
+                                                Text(
+                                                    "Premium " +
+                                                        ((_konst.expPremium
+                                                                    .value
+                                                                    .difference(
+                                                                        DateTime
+                                                                            .now())
+                                                                    .inDays +
+                                                                1)
+                                                            .toString()) +
+                                                        " hari lagi",
                                                     style: GoogleFonts.roboto(
                                                       fontSize: 12,
                                                       fontWeight:
@@ -163,8 +174,7 @@ class Setting extends StatelessWidget {
                                     backgroundColor: MaterialStateProperty.all(
                                         Colors.green)),
                                 onPressed: () async {
-                                  _konst.midtrans?.startPaymentUiFlow(
-                                      token: await _konst.getSNAPKey());
+                                  Get.to(() => const BuyPage());
                                 },
                                 child: const Text(
                                   "Top Up",

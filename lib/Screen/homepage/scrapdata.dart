@@ -4,52 +4,52 @@ import 'package:get/get.dart';
 
 class ScrapHome {
   // popular
-  var _title = [].obs;
-  var _chapters = [].obs;
-  var _chapters_url = [].obs;
-  var _image = [].obs;
-  var _skor = [].obs;
+  final _title = [].obs;
+  final _chapters = [].obs;
+  final _chapters_url = [].obs;
+  final _image = [].obs;
+  final _skor = [].obs;
 
   // pj update
-  var _titlePj = [].obs;
-  var _chaptersPj = [].obs;
-  var _chapters_urlPj = [].obs;
-  var _imagePj = [].obs;
+  final _titlePj = [].obs;
+  final _chaptersPj = [].obs;
+  final _chapters_urlPj = [].obs;
+  final _imagePj = [].obs;
 
   // latest
-  var _titleLU = [].obs;
-  var _chaptersLU = [].obs;
-  var _chapters_urlLU = [].obs;
-  var _imageLU = [].obs;
-  var _timeLU = [].obs;
+  final _titleLU = [].obs;
+  final _chaptersLU = [].obs;
+  final _chapters_urlLU = [].obs;
+  final _imageLU = [].obs;
+  final _timeLU = [].obs;
 
   // all komik
-  var _titleAll = [].obs;
-  var _chaptersAll = [].obs;
-  var _chapters_urlAll = [].obs;
-  var _imageAll = [].obs;
-  var _skorAll = [].obs;
+  final _titleAll = [].obs;
+  final _chaptersAll = [].obs;
+  final _chapters_urlAll = [].obs;
+  final _imageAll = [].obs;
+  final _skorAll = [].obs;
 
   // searchdata
-  var _titleS = [].obs;
-  var _chaptersS = [].obs;
-  var _chapters_urlS = [].obs;
-  var _imageS = [].obs;
-  var _skorS = [].obs;
+  final _titleS = [].obs;
+  final _chaptersS = [].obs;
+  final _chapters_urlS = [].obs;
+  final _imageS = [].obs;
+  final _skorS = [].obs;
 
   // genredata
-  var _titleG = [].obs;
-  var _chaptersG = [].obs;
-  var _chapters_urlG = [].obs;
-  var _imageG = [].obs;
-  var _skorG = [].obs;
+  final _titleG = [].obs;
+  final _chaptersG = [].obs;
+  final _chapters_urlG = [].obs;
+  final _imageG = [].obs;
+  final _skorG = [].obs;
 
   // newer komik
-  var _titleNK = [].obs;
-  var _genreNK = [].obs;
-  var _yearNK = [].obs;
-  var _imageNK = [].obs;
-  var _urlNK = [].obs;
+  final _titleNK = [].obs;
+  final _genreNK = [].obs;
+  final _yearNK = [].obs;
+  final _imageNK = [].obs;
+  final _urlNK = [].obs;
 
   var url = 'https://wrt.my.id/';
 

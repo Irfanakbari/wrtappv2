@@ -19,12 +19,12 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   var dataSrc = Get.find<ScrapHome>();
   var isLoading = false.obs;
-  var _titleS = [].obs;
+  final _titleS = [].obs;
   var index = 1;
-  var _chaptersS = [].obs;
-  var _chaptersUrlS = [].obs;
-  var _imageS = [].obs;
-  var _skorS = [].obs;
+  final _chaptersS = [].obs;
+  final _chaptersUrlS = [].obs;
+  final _imageS = [].obs;
+  final _skorS = [].obs;
 
   getData(String keyword) async {
     await dataSrc.searchKomik(keyword, index).then((value) {

@@ -16,12 +16,12 @@ class GenreResult extends StatefulWidget {
 
 class _GenreResultState extends State<GenreResult> {
   var fungsi = Get.find<ScrapHome>();
-  var _titleG = [].obs;
-  var _chaptersG = [].obs;
-  var _chapters_urlG = [].obs;
-  var _imageG = [].obs;
+  final _titleG = [].obs;
+  final _chaptersG = [].obs;
+  final _chapters_urlG = [].obs;
+  final _imageG = [].obs;
   RxBool isLoading = true.obs;
-  var _skorG = [].obs;
+  final _skorG = [].obs;
 
   getData() async {
     fungsi.titleG.clear();

@@ -26,31 +26,31 @@ class _HomePageState extends State<HomePage> {
 
 // pj variable
 
-  var _titlePj = [].obs;
-  var _linkPj = [].obs;
-  var _imagePj = [].obs;
-  var _chaptersPj = [].obs;
+  final _titlePj = [].obs;
+  final _linkPj = [].obs;
+  final _imagePj = [].obs;
+  final _chaptersPj = [].obs;
 
 // popular variable
-  var _title = [].obs;
-  var _link = [].obs;
-  var _image = [].obs;
-  var _chapters = [].obs;
-  var _skor = [].obs;
-  var _hot = [].obs;
+  final _title = [].obs;
+  final _link = [].obs;
+  final _image = [].obs;
+  final _chapters = [].obs;
+  final _skor = [].obs;
+  final _hot = [].obs;
 
   // latest
-  var _titleLU = [].obs;
-  var _chaptersLU = [].obs;
-  var _chapters_urlLU = [].obs;
-  var _imageLU = [].obs;
-  var _timeLU = [].obs;
+  final _titleLU = [].obs;
+  final _chaptersLU = [].obs;
+  final _chapters_urlLU = [].obs;
+  final _imageLU = [].obs;
+  final _timeLU = [].obs;
 
-  var _titleNK = [].obs;
-  var _genreNK = [].obs;
-  var _yearNK = [].obs;
-  var _imageNK = [].obs;
-  var _urlNK = [].obs;
+  final _titleNK = [].obs;
+  final _genreNK = [].obs;
+  final _yearNK = [].obs;
+  final _imageNK = [].obs;
+  final _urlNK = [].obs;
 
   getData() async {
     // run syncrhonous
