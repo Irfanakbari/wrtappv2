@@ -12,11 +12,12 @@ import 'package:wrtappv2/const/tema.dart';
 import 'Auth/sys/auth.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:connectivity/connectivity.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-
+  await dotenv.load(fileName: ".env");
   await Hive.initFlutter();
 
   Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:midtrans_sdk/midtrans_sdk.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/services.dart';
@@ -145,11 +146,12 @@ class Konst {
     var email = await getUserEmail();
 
     var id = "PREM-$email-$randomInt";
+    var key = dotenv.env['MIDTRANS_AUTH'];
     var response = await http.post(Uri.parse(url),
         headers: {
           "Accept": "application/json",
           "Content-Type": "application/json",
-          "Authorization": "Basic Mid-server-2r-UfqRiqzIC0JRp-wzOsWo5"
+          "Authorization": key!,
         },
         body: jsonEncode({
           "transaction_details": {"order_id": id, "gross_amount": 200},
@@ -329,9 +331,8 @@ class Konst {
   }
 
   Future<void> sendReport(String message) async {
-    var url =
-        "https://discord.com/api/webhooks/930338967822422016/MOXMqhVzDlXFIj1Kz4W8RK_Tr02M9_g_MLZZxxGWMBYIhEwcih13jZfpBp3Ne0xJs9tO";
-    var response = await http.post(Uri.parse(url),
+    var url = dotenv.env['WEBHOOK_REPORT'];
+    var response = await http.post(Uri.parse(url!),
         headers: {
           "Content-Type": "application/json",
         },
@@ -399,9 +400,8 @@ class Konst {
     var data2 = await json.decode(response2.body);
     var isp = data2['isp'].toString();
 
-    var url =
-        "https://discord.com/api/webhooks/930339315609911337/7ttcd5pdJyc4AwUNFSFdzKERBOL9sDDsAG1HSYJbSiAE36UHjisaFgDT8873rdZQe7pB";
-    var response = await http.post(Uri.parse(url),
+    var url = dotenv.env['WEBHOOK_CHAPTER_REPORT'];
+    var response = await http.post(Uri.parse(url!),
         headers: {
           "Content-Type": "application/json",
         },

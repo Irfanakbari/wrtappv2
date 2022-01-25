@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as parse;
 import 'package:get/get.dart';
@@ -43,7 +44,7 @@ class ScrapHome {
   // newer komik
   final newerKomik = [].obs;
 
-  var url = 'https://api.wrt.my.id/api/';
+  var url = dotenv.env['BASE_URL_API'];
 
   Future<void> delData() async {
     popular.value = [];
@@ -61,7 +62,7 @@ class ScrapHome {
 
   Future<void> getData() async {
     await delData();
-    var response = await http.get(Uri.parse(url + 'home'));
+    var response = await http.get(Uri.parse(url! + 'home'));
 
     if (response.statusCode == 200) {
       var res = json.decode(response.body);
@@ -94,8 +95,7 @@ class ScrapHome {
   }
 
   Future<List> getNewList(int page) async {
-    var response = await http
-        .get(Uri.parse('https://api.wrt.my.id/api/new/' + page.toString()));
+    var response = await http.get(Uri.parse(url! + '/new/' + page.toString()));
     if (response.statusCode == 200) {
       var res = json.decode(response.body);
       var data = res['data'];
@@ -117,7 +117,7 @@ class ScrapHome {
 
   Future<List> getDetail(String slug) async {
     detail.value = [];
-    var response = await http.get(Uri.parse(url + 'detail/' + slug));
+    var response = await http.get(Uri.parse(url! + 'detail/' + slug));
     if (response.statusCode == 200) {
       var res = json.decode(response.body);
       var data = res['data'];
@@ -140,7 +140,7 @@ class ScrapHome {
   }
 
   Future<Map> getReadKomik(String slug) async {
-    var response = await http.get(Uri.parse(url + 'read/' + slug));
+    var response = await http.get(Uri.parse(url! + 'read/' + slug));
     var res = json.decode(response.body);
     if (response.statusCode == 200) {
       var dataH = res['data-high'];
@@ -157,7 +157,7 @@ class ScrapHome {
   Future<List> getAllKomik(int page) async {
     // dataAll.value = [];
     var response =
-        await http.get(Uri.parse(url + 'mangalist/' + page.toString()));
+        await http.get(Uri.parse(url! + 'mangalist/' + page.toString()));
     if (response.statusCode == 200) {
       var res = json.decode(response.body);
       var data = res['data'];
@@ -225,7 +225,7 @@ class ScrapHome {
 
   Future<List> searchKomik(String keyword, int page) async {
     var response = await http
-        .get(Uri.parse(url + 'search/' + keyword + '/' + page.toString()));
+        .get(Uri.parse(url! + 'search/' + keyword + '/' + page.toString()));
     var res = json.decode(response.body);
     page = res['page_length'];
     var data = res['data'];
