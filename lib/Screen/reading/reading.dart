@@ -1,77 +1,58 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:http/http.dart' as http;
-import 'package:html/parser.dart' as parser;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get/get.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wrtappv2/Screen/Comment/disqus.dart';
+import 'package:wrtappv2/Screen/homepage/scrapdata.dart';
 import 'package:wrtappv2/const/abstract.dart';
 
 class ReadingPage extends StatefulWidget {
   final String postId;
-  final String chLink;
+  final String slug;
   final String chName;
-  final List chUrl;
-  final List namelist;
+  final List chlist;
+  final String link;
   final int indx;
   final String chImg;
   final String komikTitle;
-  const ReadingPage(
-      {Key? key,
-      required this.komikTitle,
-      required this.postId,
-      required this.chLink,
-      required this.chName,
-      required this.chImg,
-      required this.chUrl,
-      required this.indx,
-      required this.namelist})
-      : super(key: key);
+  const ReadingPage({
+    Key? key,
+    required this.komikTitle,
+    required this.postId,
+    required this.chName,
+    required this.chImg,
+    required this.indx,
+    required this.slug,
+    required this.chlist,
+    required this.link,
+  }) : super(key: key);
 
   @override
   _ReadingPageState createState() => _ReadingPageState();
 }
 
 class _ReadingPageState extends State<ReadingPage> {
-  List<String> imagesr = [];
+  var imagesr = [];
   final _transformationController = TransformationController();
   final ScrollController _scrollController = ScrollController();
   late TapDownDetails _doubleTapDetails;
-  var chapUrl = [];
-  var judul = "";
+  var chapSlug = [];
+  var judul = "no";
   var konst = Get.put<Konst>(Konst());
+  var scrapData = Get.find<ScrapHome>();
   RxBool isLoading = true.obs;
   scrapingData() async {
-    http.get(Uri.parse(widget.chLink)).then((response) {
-      var document = parser.parse(response.body);
-      var readerarea = document.getElementById('readerarea')!.outerHtml;
-      // get all image src from readerarea
-      var imgSrc =
-          readerarea.split('src="').map((e) => e.split('"')[0]).toList();
-      //  remove div
-      imgSrc.removeWhere((element) => element.contains('div'));
-
-      imagesr = imgSrc;
-
-      isLoading.value = false;
-      return imgSrc;
+    await scrapData.getReadKomik(widget.slug).then((value) {
+      setState(() {
+        if (value['data-min'] != null) {
+          imagesr = value['data-high'];
+        }
+        isLoading.value = false;
+      });
     });
-  }
-
-  getTitle() async {
-    var url = widget.chLink;
-    var response = await http.get(Uri.parse(url));
-    var document = parser.parse(response.body);
-    var title = document
-        .getElementsByClassName("entry-title")[0]
-        .text
-        .toString()
-        .trim();
-    judul = title;
-    return title;
   }
 
   setHistory() async {
@@ -81,7 +62,7 @@ class _ReadingPageState extends State<ReadingPage> {
     var data = [
       widget.komikTitle,
       widget.chName,
-      widget.chLink,
+      widget.slug,
       widget.chImg,
       widget.postId,
       dateNow.toString()
@@ -114,7 +95,7 @@ class _ReadingPageState extends State<ReadingPage> {
     super.initState();
     scrapingData();
     setHistory();
-    getTitle();
+    print(widget.indx);
   }
 
   @override
@@ -126,86 +107,88 @@ class _ReadingPageState extends State<ReadingPage> {
     return Scaffold(
       body:
           // pull to refresh
-          SmartRefresher(
-              enablePullDown: true,
-              enablePullUp: false,
-              header: const ClassicHeader(),
-              onRefresh: () async {
-                await Future.delayed(const Duration(seconds: 1));
-                setState(() {
-                  imagesr = [];
-                  isLoading.value = true;
-                  scrapingData();
-                  _refreshController.refreshCompleted();
-                });
-              },
-              controller: _refreshController,
-              child: Obx(
-                () => (isLoading.value)
-                    ? const Center(
-                        child: CircularProgressIndicator(),
-                      )
-                    : InteractiveViewer(
-                        transformationController: _transformationController,
-                        maxScale: 2.5,
-                        scaleEnabled: true,
-                        child: ListView.builder(
-                          physics: const BouncingScrollPhysics(),
-                          itemCount: imagesr.length,
-                          controller: _scrollController,
-                          itemBuilder: (context, index) {
-                            return Stack(
-                              children: [
-                                // image
-                                GestureDetector(
-                                  onDoubleTap: _handleDoubleTap,
-                                  onDoubleTapDown: _handleDoubleTapDown,
-                                  onTap: () => modalBottom(widget.chImg),
-                                  child: CachedNetworkImage(
-                                    cacheKey: imagesr[index],
-                                    httpHeaders: const {
-                                      'Referer': 'https://wrt.my.id',
-                                    },
-                                    imageUrl: imagesr[index] +
-                                        '?quality=' +
-                                        konst.readQuality.value,
-                                    cacheManager: CacheManager(Config(
-                                      imagesr[index],
-                                      stalePeriod: const Duration(hours: 1),
-                                    )),
-                                    width: Get.width,
-                                    useOldImageOnUrlChange: true,
-                                    fadeOutDuration:
-                                        const Duration(milliseconds: 400),
-                                    fit: BoxFit.cover,
-                                    errorWidget: (context, url, error) =>
-                                        SizedBox(
-                                      height: 300,
-                                      width: Get.width,
-                                      child: const Center(
-                                        child: Icon(
-                                          Icons.error,
-                                          size: 50,
-                                        ),
-                                      ),
-                                    ),
-                                    placeholder: (context, url) => Center(
-                                      child: SizedBox(
-                                        height: 300,
-                                        width: Get.width,
-                                        child: const Center(
-                                          child: CupertinoActivityIndicator(),
-                                        ),
-                                      ),
+          Obx(
+        () => (isLoading.value)
+            ? const Center(
+                child: CircularProgressIndicator(),
+              )
+            : InteractiveViewer(
+                transformationController: _transformationController,
+                maxScale: 2.5,
+                scaleEnabled: true,
+                child: SmartRefresher(
+                  enablePullDown: true,
+                  enablePullUp: false,
+                  header: const ClassicHeader(),
+                  onRefresh: () async {
+                    await Future.delayed(const Duration(seconds: 1));
+                    setState(() {
+                      imagesr = [];
+                      isLoading.value = true;
+                      scrapingData();
+                      _refreshController.refreshCompleted();
+                    });
+                  },
+                  controller: _refreshController,
+                  child: ListView.builder(
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: imagesr.length,
+                    controller: _scrollController,
+                    itemBuilder: (context, index) {
+                      return Stack(
+                        children: [
+                          // image
+                          GestureDetector(
+                            onDoubleTap: _handleDoubleTap,
+                            onDoubleTapDown: _handleDoubleTapDown,
+                            onTap: () => modalBottom(widget.chImg),
+                            child: CachedNetworkImage(
+                              cacheKey: imagesr[index],
+                              httpHeaders: const {
+                                'Referer': 'https://wrt.my.id',
+                              },
+                              imageUrl: imagesr[index] +
+                                  '?quality=' +
+                                  konst.readQuality.value,
+                              cacheManager: CacheManager(Config(
+                                imagesr[index],
+                                stalePeriod: const Duration(hours: 1),
+                              )),
+                              width: Get.width,
+                              useOldImageOnUrlChange: true,
+                              fadeOutDuration:
+                                  const Duration(milliseconds: 500),
+                              fit: BoxFit.cover,
+                              errorWidget: (context, url, error) => SizedBox(
+                                height: 300,
+                                width: Get.width,
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.error,
+                                    size: 50,
+                                  ),
+                                ),
+                              ),
+                              placeholder: (context, url) => Center(
+                                child: SizedBox(
+                                  height: 300,
+                                  width: Get.width,
+                                  child: const Center(
+                                    child: CupertinoActivityIndicator(
+                                      radius: 15,
                                     ),
                                   ),
                                 ),
-                              ],
-                            );
-                          },
-                        ),
-                      ),
-              )),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ),
+      ),
     );
   }
 
@@ -246,7 +229,7 @@ class _ReadingPageState extends State<ReadingPage> {
                                 FlatButton(
                                   child: const Text('Ya'),
                                   onPressed: () {
-                                    konst.sendChapterReport(widget.chLink);
+                                    konst.sendChapterReport(widget.link);
                                     Get.back();
                                   },
                                 ),
@@ -259,7 +242,7 @@ class _ReadingPageState extends State<ReadingPage> {
                         onPressed: () {
                           Get.to(
                               () => Disqus(
-                                    url: widget.chLink,
+                                    url: widget.link,
                                     title: judul,
                                   ),
                               transition: Transition.downToUp);
@@ -323,7 +306,7 @@ class _ReadingPageState extends State<ReadingPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    (widget.indx != widget.chUrl.length - 1 && widget.indx != 0)
+                    (widget.indx != widget.chlist.length - 1)
                         ? IconButton(
                             icon: const Icon(Icons.arrow_back),
                             onPressed: () async {
@@ -331,20 +314,22 @@ class _ReadingPageState extends State<ReadingPage> {
                               Navigator.of(context)
                                   .pushReplacement(MaterialPageRoute(
                                       builder: (context) => ReadingPage(
-                                            namelist: widget.namelist,
                                             komikTitle: widget.komikTitle,
                                             postId: widget.postId,
-                                            chLink:
-                                                widget.chUrl[widget.indx + 1],
-                                            chName: widget
-                                                .namelist[widget.indx + 1],
+                                            chName:
+                                                widget.chlist[widget.indx + 1]
+                                                    ['chapter'],
                                             chImg: widget.chImg,
-                                            chUrl: widget.chUrl,
                                             indx: widget.indx + 1,
+                                            chlist: widget.chlist,
+                                            link: widget.chlist[widget.indx + 1]
+                                                ['link'],
+                                            slug: widget.chlist[widget.indx + 1]
+                                                ['slug'],
                                           )));
                             })
                         : const SizedBox(),
-                    (widget.indx != 1)
+                    (widget.indx != 0)
                         ? IconButton(
                             icon: const Icon(Icons.arrow_forward),
                             onPressed: () async {
@@ -352,16 +337,18 @@ class _ReadingPageState extends State<ReadingPage> {
                               Navigator.of(context)
                                   .pushReplacement(MaterialPageRoute(
                                       builder: (context) => ReadingPage(
-                                            namelist: widget.namelist,
                                             komikTitle: widget.komikTitle,
                                             postId: widget.postId,
-                                            chLink:
-                                                widget.chUrl[widget.indx - 1],
-                                            chName: widget
-                                                .namelist[widget.indx - 1],
+                                            chName:
+                                                widget.chlist[widget.indx - 1]
+                                                    ['chapter'],
                                             chImg: widget.chImg,
-                                            chUrl: widget.chUrl,
                                             indx: widget.indx - 1,
+                                            chlist: widget.chlist,
+                                            link: widget.chlist[widget.indx - 1]
+                                                ['link'],
+                                            slug: widget.chlist[widget.indx - 1]
+                                                ['slug'],
                                           )));
                             })
                         : const SizedBox(

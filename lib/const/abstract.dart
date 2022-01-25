@@ -32,7 +32,7 @@ class Konst {
   var user = Auth();
   Rx versi = "".obs;
   var topUpAmount = 0.obs;
-  var premiumStatus = false.obs;
+  RxBool premiumStatus = false.obs;
   var expPremium = DateTime.now().obs;
   static final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
   FirebaseFirestore server = FirebaseFirestore.instance;
@@ -59,15 +59,26 @@ class Konst {
     OneSignal.shared
         .setNotificationOpenedHandler((OSNotificationOpenedResult result) {
       if (result.notification.launchUrl!.contains('manga')) {
-        Future.delayed(const Duration(milliseconds: 1000), () {
-          Get.to(DetailPage(url: result.notification.launchUrl.toString()));
+        Future.delayed(const Duration(milliseconds: 2000), () {
+          var slug = result.notification.launchUrl
+              .toString()
+              .split('https://wrt.my.id/manga/')[1]
+              .split('/')[0];
+          Get.to(DetailPage(
+            url: result.notification.launchUrl.toString(),
+            slug: slug,
+          ));
         });
       } else {
         var url = result.notification.launchUrl.toString();
         url = url.substring(url.indexOf(".id/") + 4);
         url = "https://wrt.my.id/manga/$url";
         url = url.substring(0, url.indexOf("-chapter-"));
-        Get.to(DetailPage(url: url));
+        var slug = url.split('https://wrt.my.id/manga/')[1].split('/')[0];
+        Get.to(DetailPage(
+          url: url,
+          slug: slug,
+        ));
       }
     });
   }
@@ -75,8 +86,8 @@ class Konst {
   void initSDK() async {
     midtrans = await MidtransSDK.init(
       config: MidtransConfig(
-        clientKey: "SB-Mid-client-lbd0oNugCP2QSV1P",
-        merchantBaseUrl: "https://api.sandbox.midtrans.com",
+        clientKey: "Mid-client-dUXPYcJYKoYPe4Im",
+        merchantBaseUrl: "https://app.midtrans.com/snap/v1/transactions",
         language: 'id',
       ),
     );
@@ -129,65 +140,36 @@ class Konst {
   }
 
   Future getSNAPKey() async {
-    var url = "https://app.sandbox.midtrans.com/snap/v1/transactions";
+    var url = "https://app.midtrans.com/snap/v1/transactions";
     var randomInt = Random().nextInt(1000);
+    var email = await getUserEmail();
+
+    var id = "PREM-$email-$randomInt";
     var response = await http.post(Uri.parse(url),
         headers: {
           "Accept": "application/json",
           "Content-Type": "application/json",
-          "Authorization":
-              "Basic U0ItTWlkLXNlcnZlci1MSkJfbTR6N3NDRGU5b3lxaHE0VXo5eF86"
+          "Authorization": "Basic Mid-server-2r-UfqRiqzIC0JRp-wzOsWo5"
         },
         body: jsonEncode({
-          "transaction_details": {
-            "order_id": "Prem-$randomInt",
-            "gross_amount": 10000
-          },
-          "enabled_payments": [
-            "echannel",
-            "bca_va",
-            "bni_va",
-            "bri_va",
-            "gopay",
-            "shopeepay"
-          ],
-          "customer_details": {
-            "first_name": "TEST",
-            "last_name": "MIDTRANSER",
-            "email": "test@midtrans.com",
-            "phone": "+628123456",
-            "billing_address": {
-              "first_name": "TEST",
-              "last_name": "MIDTRANSER",
-              "email": "test@midtrans.com",
-              "phone": "081 2233 44-55",
-              "address": "Sudirman",
-              "city": "Jakarta",
-              "postal_code": "12190",
-              "country_code": "IDN"
-            },
-            "shipping_address": {
-              "first_name": "TEST",
-              "last_name": "MIDTRANSER",
-              "email": "test@midtrans.com",
-              "phone": "0 8128-75 7-9338",
-              "address": "Sudirman",
-              "city": "Jakarta",
-              "postal_code": "12190",
-              "country_code": "IDN"
-            }
-          },
+          "transaction_details": {"order_id": id, "gross_amount": 200},
           "item_details": [
             {
-              "id": "WRT Premium 1 Bulan",
-              "price": 10000,
+              "id": "PREMIUM BASIC",
+              "price": 200,
               "quantity": 1,
-              "name": "Midtrans Bear",
-              "brand": "Midtrans",
-              "category": "Toys",
+              "name": "Premium basic 1 Hari",
+              "brand": "World Romance Translation",
+              "category": "Account",
               "merchant_name": "World Romance Translation"
             }
           ],
+          "enabled_payments": ["gopay", "shopeepay"],
+          "shopeepay": {"callback_url": "http://shopeepay.com"},
+          "gopay": {
+            "enable_callback": true,
+            "callback_url": "http://gopay.com"
+          },
         }));
     var res = jsonDecode(response.body);
     var snapToken = res['token'];
@@ -332,7 +314,7 @@ class Konst {
 
   Future getQualityRead() async {
     var prefs = await SharedPreferences.getInstance();
-    readQuality.value = prefs.getString("readQuality") ?? "100";
+    readQuality.value = prefs.getString("readQuality") ?? "High";
   }
 
   Future<void> getStatusServer() async {
@@ -465,5 +447,4 @@ class Konst {
   }
 }
 
-class CacheImg extends ImageCache {
-}
+class CacheImg extends ImageCache {}

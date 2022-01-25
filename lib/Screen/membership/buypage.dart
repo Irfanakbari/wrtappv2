@@ -21,37 +21,37 @@ class BuyPage extends StatelessWidget {
               pricingCards: [
                 PricingCard(
                   title: 'Basic',
-                  price: 'Rp 4.000',
+                  price: 'Rp 200',
                   subPriceText: '/Minggu',
                   billedText: '',
                   cardColor: Colors.blue,
                   onPress: () async {
-                    _konst.topUpAmount.value = 7;
-                    _konst.bayar(7);
+                    _konst.topUpAmount.value = 1;
+                    _konst.bayar(1);
                   },
                 ),
                 PricingCard(
                   title: 'Pro',
-                  price: 'Rp 15.000',
+                  price: 'Rp 500',
                   subPriceText: '/Bulan',
                   billedText: '',
                   cardColor: Colors.green,
                   mainPricing: true,
                   mainPricingHighlightText: 'Save money',
                   onPress: () async {
-                    _konst.topUpAmount.value = 7;
-                    _konst.bayar(30);
+                    _konst.topUpAmount.value = 1;
+                    _konst.bayar(1);
                   },
                 ),
                 PricingCard(
                   title: 'Premium',
-                  price: 'Rp 35.000',
+                  price: 'Rp 600',
                   subPriceText: '/3 Bulan',
                   billedText: '',
                   cardColor: Colors.red,
                   onPress: () async {
-                    _konst.topUpAmount.value = 7;
-                    _konst.bayar(90);
+                    _konst.topUpAmount.value = 1;
+                    _konst.bayar(1);
                   },
                 ),
               ],

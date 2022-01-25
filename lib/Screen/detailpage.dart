@@ -4,58 +4,46 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get/get_instance/src/extension_instance.dart';
 import 'package:get/get_rx/src/rx_types/rx_types.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
-import 'package:http/http.dart' as http;
-import 'package:html/parser.dart' as parse;
 import 'package:get/route_manager.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wrtappv2/Screen/Comment/disqus.dart';
 import 'package:wrtappv2/Screen/bookmark/BmModel.dart';
+import 'package:wrtappv2/Screen/homepage/scrapdata.dart';
 import 'package:wrtappv2/Screen/reading/reading.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wrtappv2/const/abstract.dart';
 
 class DetailPage extends StatefulWidget {
+  final String slug;
   final String url;
-  const DetailPage({Key? key, required this.url}) : super(key: key);
+  const DetailPage({Key? key, required this.slug, required this.url})
+      : super(key: key);
 
   @override
   State<DetailPage> createState() => _DetailPageState();
 }
 
 class _DetailPageState extends State<DetailPage> {
-  // ignore: prefer_final_fields
-  RxBool _isLoading = false.obs;
-  var url = 'https://wrt.my.id/komik/onee-san-is-invading/';
-  var title = "";
-  var sinopsis = [];
-  var altTitle = "";
-  var releaseDate = "";
-  var status = "";
-  var type = "";
-  var author = "";
-  var lastUpdated = "";
-  var postedBy = "";
-  var views = "";
-  var genres = [];
-  var chapterName = [];
-  var chapterDate = [];
-  var chapterLink = [];
-  var rating = 0.0;
-  var postId = "";
+  RxBool isLoading = false.obs;
+  RxList data = [].obs;
+  RxString postID = "".obs;
+  var scrapdata = Get.find<ScrapHome>();
   var prefs;
   RxBool historyStatus = true.obs;
-  var cover = "";
+  // var cover = "";
   var historyData = [].obs;
   Rx<MaterialColor> warna = Colors.green.obs;
   var bm = Get.find<BmModel>();
   Rx isBookmark = false.obs;
   Rx<String> bookm = 'Bookmark'.obs;
+  final _konst = Get.find<Konst>();
 
   Stream getHistory() async* {
     while (true) {
       await Future.delayed(const Duration(seconds: 1));
-      var history = prefs.getStringList('history' + postId);
+      var history = prefs.getStringList('history' + postID.value);
       if (history != null) {
         historyStatus.value = false;
         historyData.value = history;
@@ -84,97 +72,13 @@ class _DetailPageState extends State<DetailPage> {
 
   scrapData() async {
     prefs = await SharedPreferences.getInstance();
-    url = widget.url;
-    var resp = await http.Client().get(Uri.parse(url));
-    var document = parse.parse(resp.body);
-    title = document.querySelector('h1.entry-title')!.text;
-    releaseDate = document
-        .getElementsByClassName('infotable')[0]
-        .getElementsByTagName('tbody')[0]
-        .getElementsByTagName('tr')[2]
-        .getElementsByTagName('td')[1]
-        .text;
-    postId = document.getElementsByTagName('article')[0].attributes['id']!;
-    status = document
-        .getElementsByClassName('infotable')[0]
-        .getElementsByTagName('tbody')[0]
-        .getElementsByTagName('tr')[0]
-        .getElementsByTagName('td')[1]
-        .text;
-    type = document
-        .getElementsByClassName('infotable')[0]
-        .getElementsByTagName('tbody')[0]
-        .getElementsByTagName('tr')[1]
-        .getElementsByTagName('td')[1]
-        .text;
-    author = document
-        .getElementsByClassName('infotable')[0]
-        .getElementsByTagName('tbody')[0]
-        .getElementsByTagName('tr')[3]
-        .getElementsByTagName('td')[1]
-        .text;
-    lastUpdated = document
-        .getElementsByClassName('infotable')[0]
-        .getElementsByTagName('tbody')[0]
-        .getElementsByTagName('tr')[8]
-        .getElementsByTagName('td')[1]
-        .text;
-    postedBy = document
-        .getElementsByClassName('infotable')[0]
-        .getElementsByTagName('tbody')[0]
-        .getElementsByTagName('tr')[6]
-        .getElementsByTagName('td')[1]
-        .text;
-    cover = document
-        .getElementsByClassName("seriestucontl")[0]
-        .getElementsByClassName("thumb")[0]
-        .getElementsByTagName("img")[0]
-        .attributes["src"]
-        .toString();
-    views = document
-        .getElementsByClassName('infotable')[0]
-        .getElementsByTagName('tbody')[0]
-        .getElementsByTagName('tr')[9]
-        .getElementsByTagName('td')[1]
-        .text;
-    // get all tag p
-    sinopsis = document
-        .getElementsByClassName('entry-content')[0]
-        .getElementsByTagName('p')
-        .map((e) => e.text)
-        .toList();
-    // get all genre
-    genres = document
-        .getElementsByClassName('seriestugenre')[0]
-        .getElementsByTagName('a')
-        .map((e) => e.text)
-        .toList();
-    chapterName = document
-        .getElementsByClassName('chapternum')
-        .map((e) => e.text)
-        .toList();
-    chapterDate = document
-        .getElementsByClassName('chapterdate')
-        .map((e) => e.text)
-        .toList();
-
-    for (var i = 0; i < chapterName.length; i++) {
-      chapterLink.add(
-        document
-            .getElementsByClassName('eph-num')
-            .elementAt(i)
-            .getElementsByTagName('a')
-            .elementAt(0)
-            .attributes["href"],
-      );
-    }
-    rating = double.parse(
-      document.querySelector('div.num')!.text,
-    );
-    altTitle = document.querySelector('div.seriestualt')!.text;
+    await scrapdata.getDetail(widget.slug).then((value) {
+      data.value = value;
+      postID.value = data[0]['post_id'] ?? "";
+    });
 
     getHistory();
-    bm.checkBookmark(postId).then((value) {
+    bm.checkBookmark(data[0]['post_id']).then((value) {
       if (value) {
         warna = Colors.red.obs;
         bookm.value = 'Bookmarked';
@@ -185,12 +89,13 @@ class _DetailPageState extends State<DetailPage> {
         bookm.value = 'Bookmark';
       }
     });
-    _isLoading.value = true;
+    isLoading.value = true;
   }
 
   @override
   void initState() {
     super.initState();
+
     scrapData();
   }
 
@@ -223,7 +128,7 @@ class _DetailPageState extends State<DetailPage> {
               ),
             ),
           ),
-          body: _isLoading.value
+          body: isLoading.value
               ? SizedBox(
                   width: double.infinity,
                   height: Get.height,
@@ -231,12 +136,13 @@ class _DetailPageState extends State<DetailPage> {
                     children: [
                       CachedNetworkImage(
                         cacheManager: CacheManager(Config(
-                          cover,
+                          data[0]['cover'].toString(),
                           stalePeriod: const Duration(hours: 2),
                         )),
                         width: MediaQuery.of(context).size.width,
                         height: MediaQuery.of(context).size.height,
-                        imageUrl: cover.toString() + '?resize=200,325',
+                        imageUrl:
+                            data[0]['cover'].toString() + '?resize=200,325',
                         fit: BoxFit.fill,
                         placeholder: (context, url) => const SizedBox(
                           width: 130,
@@ -286,10 +192,10 @@ class _DetailPageState extends State<DetailPage> {
                                       height: 200,
                                       child: CachedNetworkImage(
                                         cacheManager: CacheManager(Config(
-                                          cover,
+                                          data[0]['cover'].toString(),
                                           stalePeriod: const Duration(hours: 2),
                                         )),
-                                        imageUrl: cover.toString() +
+                                        imageUrl: data[0]['cover'].toString() +
                                             '?resize=200,325',
                                         fit: BoxFit.fill,
                                         placeholder: (context, url) => SizedBox(
@@ -339,7 +245,7 @@ class _DetailPageState extends State<DetailPage> {
                                                   CrossAxisAlignment.start,
                                               children: [
                                                 Text(
-                                                  title,
+                                                  data[0]['title'].toString(),
                                                   maxLines: 3,
                                                   style: const TextStyle(
                                                       overflow:
@@ -361,14 +267,18 @@ class _DetailPageState extends State<DetailPage> {
                                                       borderColor: Colors.red,
                                                       size: 25,
                                                       allowHalfRating: true,
-                                                      value: rating / 2.0,
+                                                      value: double.parse(
+                                                              data[0]
+                                                                  ['rating']) /
+                                                          2,
                                                       onChanged: (value) {},
                                                     ),
                                                     const SizedBox(
                                                       width: 5,
                                                     ),
                                                     Text(
-                                                      rating.toString(),
+                                                      data[0]['rating']
+                                                          .toString(),
                                                       style: const TextStyle(
                                                           color: Colors.white,
                                                           fontSize: 16),
@@ -411,7 +321,8 @@ class _DetailPageState extends State<DetailPage> {
                                                     try {
                                                       bm
                                                           .deleteBookmark(
-                                                              postId)
+                                                              data[0]
+                                                                  ['post_id'])
                                                           .then((value) {
                                                         isBookmark.value =
                                                             false;
@@ -428,10 +339,11 @@ class _DetailPageState extends State<DetailPage> {
                                                     try {
                                                       bm
                                                           .saveBookmark(
-                                                              title,
-                                                              url,
-                                                              cover,
-                                                              postId)
+                                                        data[0]['title'],
+                                                        widget.slug,
+                                                        data[0]['cover'],
+                                                        data[0]['post_id'],
+                                                      )
                                                           .then((value) {
                                                         isBookmark.value = true;
                                                         warna.value =
@@ -467,7 +379,9 @@ class _DetailPageState extends State<DetailPage> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          altTitle.trimLeft().toString(),
+                                          data[0]["alternative"]
+                                              .trimLeft()
+                                              .toString(),
                                           style: const TextStyle(
                                               color: Colors.grey,
                                               fontSize: 16,
@@ -481,7 +395,8 @@ class _DetailPageState extends State<DetailPage> {
                                               top: 4, bottom: 4),
                                           child: Text(
                                             "Tahun Rilis : " +
-                                                releaseDate.toString(),
+                                                data[0]['info'][2]["Rilis"]
+                                                    .toString(),
                                             style: const TextStyle(
                                                 color: Colors.white,
                                                 fontWeight: FontWeight.normal,
@@ -493,7 +408,9 @@ class _DetailPageState extends State<DetailPage> {
                                               top: 4, bottom: 4),
                                           child: Text(
                                             "Status : " +
-                                                status.toString().trimLeft(),
+                                                data[0]['info'][0]["Status"]
+                                                    .toString()
+                                                    .trimLeft(),
                                             style: const TextStyle(
                                                 color: Colors.white,
                                                 fontWeight: FontWeight.normal,
@@ -505,7 +422,9 @@ class _DetailPageState extends State<DetailPage> {
                                               top: 4, bottom: 4),
                                           child: Text(
                                             "Author : " +
-                                                author.toString().trimLeft(),
+                                                data[0]['info'][3]["Author"]
+                                                    .toString()
+                                                    .trimLeft(),
                                             style: const TextStyle(
                                                 color: Colors.white,
                                                 fontWeight: FontWeight.normal,
@@ -517,7 +436,8 @@ class _DetailPageState extends State<DetailPage> {
                                               top: 4, bottom: 4),
                                           child: Text(
                                             "Last Update : " +
-                                                lastUpdated
+                                                data[0]['info'][8]
+                                                        ["Last Update"]
                                                     .toString()
                                                     .trimLeft(),
                                             style: const TextStyle(
@@ -531,7 +451,7 @@ class _DetailPageState extends State<DetailPage> {
                                               top: 4, bottom: 4),
                                           child: Text(
                                             "Posted By : " +
-                                                postedBy
+                                                data[0]['info'][6]["Uploader"]
                                                     .toString()
                                                     .trimLeft()
                                                     .trimRight(),
@@ -546,7 +466,9 @@ class _DetailPageState extends State<DetailPage> {
                                                 top: 4, bottom: 4),
                                             child: Text(
                                               "Views : " +
-                                                  views.toString().trimLeft(),
+                                                  data[0]['info'][9]["Viewers"]
+                                                      .toString()
+                                                      .trimLeft(),
                                               style: const TextStyle(
                                                   color: Colors.white,
                                                   fontWeight: FontWeight.normal,
@@ -581,26 +503,19 @@ class _DetailPageState extends State<DetailPage> {
                                           const Divider(
                                             color: Colors.grey,
                                           ),
-                                          for (var i = 0;
-                                              i < sinopsis.length;
-                                              i++)
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                  top: 4, bottom: 4),
-                                              child: Text(
-                                                sinopsis[i].toString(),
-                                                style:
-                                                    GoogleFonts.archivoNarrow(
-                                                        textStyle:
-                                                            const TextStyle(
-                                                                color:
-                                                                    Colors.grey,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .normal,
-                                                                fontSize: 15)),
-                                              ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                top: 4, bottom: 4),
+                                            child: Text(
+                                              data[0]['sinopsis'].toString(),
+                                              style: GoogleFonts.archivoNarrow(
+                                                  textStyle: const TextStyle(
+                                                      color: Colors.grey,
+                                                      fontWeight:
+                                                          FontWeight.normal,
+                                                      fontSize: 15)),
                                             ),
+                                          ),
                                         ],
                                       )),
                                 ),
@@ -635,7 +550,7 @@ class _DetailPageState extends State<DetailPage> {
                                           children: [
                                             Wrap(children: [
                                               for (var i = 0;
-                                                  i < genres.length;
+                                                  i < data[0]['genre'].length;
                                                   i++)
                                                 Padding(
                                                     padding:
@@ -662,7 +577,8 @@ class _DetailPageState extends State<DetailPage> {
                                                                 const EdgeInsets
                                                                     .all(5),
                                                             child: Text(
-                                                              genres[i]
+                                                              data[0]['genre']
+                                                                      [i]
                                                                   .toString()
                                                                   .trimLeft(),
                                                               style: const TextStyle(
@@ -829,8 +745,10 @@ class _DetailPageState extends State<DetailPage> {
                                                     CrossAxisAlignment.start,
                                                 children: [
                                                   Wrap(children: [
-                                                    for (var i = 1;
-                                                        i < chapterName.length;
+                                                    for (var i = 0;
+                                                        i <
+                                                            data[0]['list_chapter']
+                                                                .length;
                                                         i++)
                                                       GestureDetector(
                                                         child: Padding(
@@ -861,8 +779,9 @@ class _DetailPageState extends State<DetailPage> {
                                                                           .spaceBetween,
                                                                   children: [
                                                                     Text(
-                                                                      chapterName[
-                                                                              i]
+                                                                      data[0]['list_chapter'][i]
+                                                                              [
+                                                                              "chapter"]
                                                                           .toString()
                                                                           .trimLeft(),
                                                                       style: const TextStyle(
@@ -874,8 +793,9 @@ class _DetailPageState extends State<DetailPage> {
                                                                               FontWeight.normal),
                                                                     ),
                                                                     Text(
-                                                                      chapterDate[
-                                                                              i]
+                                                                      data[0]['list_chapter'][i]
+                                                                              [
+                                                                              "update"]
                                                                           .toString()
                                                                           .trimLeft(),
                                                                       style: const TextStyle(
@@ -893,34 +813,26 @@ class _DetailPageState extends State<DetailPage> {
                                                         onTap: () async {
                                                           Get.to(
                                                               () => ReadingPage(
-                                                                    namelist:
-                                                                        chapterName,
-                                                                    chUrl:
-                                                                        chapterLink,
-                                                                    indx: i,
-                                                                    postId:
-                                                                        postId,
-                                                                    chName: chapterName[
-                                                                            i]
-                                                                        .toString()
-                                                                        .trimLeft(),
-                                                                    chLink: chapterLink[
-                                                                            i]
-                                                                        .toString()
-                                                                        .trimLeft(),
-                                                                    chImg: cover
-                                                                        .toString(),
-                                                                    komikTitle: title
-                                                                        .toString()
-                                                                        .trimLeft(),
-                                                                  ),
+                                                                  chlist: data[0][
+                                                                      'list_chapter'],
+                                                                  indx: i,
+                                                                  slug: data[0]['list_chapter'][i]["slug"]
+                                                                      .toString(),
+                                                                  postId: data[0][
+                                                                      'post_id'],
+                                                                  chName: data[0]['list_chapter'][i]["chapter"]
+                                                                      .toString()
+                                                                      .trimLeft(),
+                                                                  chImg: data[0]['cover']
+                                                                      .toString(),
+                                                                  komikTitle: data[0]['title']
+                                                                      .toString()
+                                                                      .trimLeft(),
+                                                                  link: data[0]['list_chapter'][i]
+                                                                      ["link"]),
                                                               transition:
-                                                                  Transition
-                                                                      .fadeIn,
-                                                              duration:
-                                                                  const Duration(
-                                                                      milliseconds:
-                                                                          700));
+                                                                  Transition.fadeIn,
+                                                              duration: const Duration(milliseconds: 700));
                                                         },
                                                       )
                                                   ])
@@ -965,8 +877,11 @@ class _DetailPageState extends State<DetailPage> {
                                               onPressed: () {
                                                 Get.to(
                                                     () => Disqus(
-                                                          url: url,
-                                                          title: title,
+                                                          url: widget.url,
+                                                          title: data[0]
+                                                                  ['title']
+                                                              .toString()
+                                                              .trimLeft(),
                                                         ),
                                                     transition:
                                                         Transition.downToUp);
@@ -994,9 +909,11 @@ class _DetailPageState extends State<DetailPage> {
                     ],
                   ),
                 )
-              : const Center(
-                  child: CircularProgressIndicator(),
-                ),
+              : Center(
+                  child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                      Theme.of(context).primaryColor),
+                )),
         ));
   }
 }

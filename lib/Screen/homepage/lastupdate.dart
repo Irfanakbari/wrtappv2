@@ -3,23 +3,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get/route_manager.dart';
+import 'package:wrtappv2/Screen/all/newer.dart';
 import 'package:wrtappv2/Screen/detailpage.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class LastUpdate extends StatelessWidget {
-  final titleLU;
-  final imageLU;
-  final linkLU;
-  final chaptersLU;
-  final timeLU;
-  const LastUpdate(
-      {Key? key,
-      this.titleLU,
-      this.imageLU,
-      this.linkLU,
-      this.chaptersLU,
-      this.timeLU})
-      : super(key: key);
+  final List data;
+  const LastUpdate({Key? key, required this.data}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -29,17 +19,50 @@ class LastUpdate extends StatelessWidget {
         width: Get.width,
         color: Theme.of(context).backgroundColor,
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.only(
+            left: 8,
+            right: 8,
+            top: 4,
+            bottom: 8,
+          ),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text("Update Terbaru",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                )),
-            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text("Update Terbaru",
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    )),
+                // all button
+                Row(
+                  children: [
+                    FlatButton(
+                      onPressed: () {
+                        Get.to(() => const NewerList(),
+                            transition: Transition.downToUp);
+                      },
+                      child: const Text(
+                        "Lihat Semua",
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.redAccent,
+                        ),
+                      ),
+                    ),
+                    const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 13,
+                      color: Colors.redAccent,
+                    ),
+                  ],
+                ),
+              ],
+            ),
             const Divider(
               height: 5,
+              color: Colors.grey,
             ),
             const SizedBox(height: 10),
             // gridview
@@ -53,11 +76,14 @@ class LastUpdate extends StatelessWidget {
                 children: [
                   // sizebox size relative
                   // card
-                  for (int i = 0; i < titleLU.length + 0; i++)
+                  for (int i = 0; i < data.length + 0; i++)
                     GestureDetector(
                       onTap: () {
                         Get.to(
-                          () => DetailPage(url: linkLU[i]),
+                          () => DetailPage(
+                            slug: data[i]['slug'],
+                            url: data[i]['link'],
+                          ),
                           transition: Transition.fadeIn,
                         );
                       },
@@ -67,37 +93,48 @@ class LastUpdate extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
-                            Row(
-                              children: [
-                                Expanded(
-                                  flex: 8,
-                                  child: Column(
-                                    children: [
-                                      CachedNetworkImage(
-                                        cacheKey: imageLU[i],
-                                        width: Get.width * 0.3,
-                                        height: 165,
-                                        cacheManager: CacheManager(Config(
-                                          imageLU[i],
-                                          stalePeriod: const Duration(hours: 2),
-                                        )),
-                                        imageUrl: imageLU[i],
-                                        placeholderFadeInDuration:
-                                            const Duration(milliseconds: 500),
-                                        fit: BoxFit.fill,
-                                        placeholder: (context, url) {
-                                          // cupertino loader
-                                          return const CupertinoActivityIndicator(
-                                            radius: 10,
-                                          );
-                                        },
-                                        errorWidget: (context, url, error) =>
-                                            const Icon(Icons.error),
-                                      )
-                                    ],
+                            Card(
+                              shadowColor: Colors.black.withOpacity(0.5),
+                              color: Colors.transparent,
+                              elevation: 8,
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    flex: 8,
+                                    child: Column(
+                                      children: [
+                                        CachedNetworkImage(
+                                          cacheKey: data[i]['img'],
+                                          width: Get.width * 0.3,
+                                          height: 165,
+                                          fadeInCurve: Curves.easeIn,
+                                          fadeInDuration:
+                                              const Duration(milliseconds: 500),
+                                          cacheManager: CacheManager(Config(
+                                            data[i]['img'],
+                                            stalePeriod:
+                                                const Duration(hours: 2),
+                                          )),
+                                          imageUrl: data[i]['img'],
+                                          placeholderFadeInDuration:
+                                              const Duration(milliseconds: 500),
+                                          fit: BoxFit.contain,
+                                          placeholder: (context, url) {
+                                            // cupertino loader
+                                            return const Center(
+                                              child: CupertinoActivityIndicator(
+                                                radius: 10,
+                                              ),
+                                            );
+                                          },
+                                          errorWidget: (context, url, error) =>
+                                              const Icon(Icons.error),
+                                        )
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                             Row(
                               children: <Widget>[
@@ -109,7 +146,7 @@ class LastUpdate extends StatelessWidget {
                                     children: [
                                       const SizedBox(height: 2),
                                       Text(
-                                        titleLU[i].toString(),
+                                        data[i]['title'].toString(),
                                         style: GoogleFonts.roboto(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w600,
@@ -121,19 +158,21 @@ class LastUpdate extends StatelessWidget {
                                       // for each chapter
 
                                       Text(
-                                        chaptersLU[i]
+                                        data[i]['last_chapter']
                                             .toString()
-                                            .replaceAll("Ch.", "Chapter"),
+                                            .replaceAll("Chapter", "Chapter "),
                                         style: GoogleFonts.roboto(
                                           wordSpacing: 1,
-                                          letterSpacing: 1,
+                                          color: Colors.grey,
                                           fontSize: 14,
-                                          fontWeight: FontWeight.w200,
+                                          fontWeight: FontWeight.normal,
                                         ),
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
                                       ),
                                       const SizedBox(height: 2),
                                       Text(
-                                        timeLU[i].toString(),
+                                        data[i]['last_update'].toString(),
                                         style: const TextStyle(
                                             fontSize: 13,
                                             color: Color.fromARGB(

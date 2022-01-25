@@ -19,20 +19,14 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   var dataSrc = Get.find<ScrapHome>();
   var isLoading = false.obs;
-  final _titleS = [].obs;
   var index = 1;
-  final _chaptersS = [].obs;
-  final _chaptersUrlS = [].obs;
-  final _imageS = [].obs;
-  final _skorS = [].obs;
+  RxInt max = 1.obs;
+  RxList data = [].obs;
 
   getData(String keyword) async {
     await dataSrc.searchKomik(keyword, index).then((value) {
-      _titleS.value = dataSrc.titleS;
-      _chaptersS.value = dataSrc.chaptersS;
-      _chaptersUrlS.value = dataSrc.chaptersUrlS;
-      _imageS.value = dataSrc.imageS;
-      _skorS.value = dataSrc.skorS;
+      data.value = value[0];
+      max.value = value[1];
     }).then((value) {
       isLoading.value = true;
     });
@@ -69,17 +63,9 @@ class _SearchPageState extends State<SearchPage> {
               ),
               onSubmitted: (context) {
                 index = 1;
+                max.value = 1;
                 // clear variable
-                _titleS.value = [];
-                _chaptersS.value = [];
-                _chaptersUrlS.value = [];
-                _imageS.value = [];
-                _skorS.value = [];
-                dataSrc.setTitleS = [];
-                dataSrc.setChaptersS = [];
-                dataSrc.setChaptersUrlS = [];
-                dataSrc.setImageS = [];
-                dataSrc.setSkorS = [];
+                data.clear();
 
                 getData(controller.text);
               }),
@@ -88,24 +74,16 @@ class _SearchPageState extends State<SearchPage> {
               icon: const Icon(Icons.search),
               onPressed: () {
                 index = 1;
+                max.value = 1;
                 // clear variable
-                _titleS.value = [];
-                _chaptersS.value = [];
-                _chaptersUrlS.value = [];
-                _imageS.value = [];
-                _skorS.value = [];
-                dataSrc.setTitleS = [];
-                dataSrc.setChaptersS = [];
-                dataSrc.setChaptersUrlS = [];
-                dataSrc.setImageS = [];
-                dataSrc.setSkorS = [];
+                data.clear();
 
                 getData(controller.text);
               },
             ),
           ],
         ),
-        body: (_titleS.isNotEmpty)
+        body: (data.isNotEmpty)
             ? Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: LazyLoadScrollView(
@@ -113,13 +91,11 @@ class _SearchPageState extends State<SearchPage> {
                   scrollOffset: 200,
                   onEndOfPage: () {
                     index++;
-                    dataSrc.searchKomik(controller.text, index).then((value) {
-                      _titleS.value = dataSrc.titleS;
-                      _chaptersS.value = dataSrc.chaptersS;
-                      _chaptersUrlS.value = dataSrc.chaptersUrlS;
-                      _imageS.value = dataSrc.imageS;
-                      _skorS.value = dataSrc.skorS;
-                    });
+                    if (index <= max.value) {
+                      dataSrc.searchKomik(controller.text, index).then((value) {
+                        data.addAll(value[0]);
+                      });
+                    }
                   },
                   child:
                       //  grid view
@@ -130,12 +106,16 @@ class _SearchPageState extends State<SearchPage> {
                     childAspectRatio: (Get.width / Get.height) * 1.05,
                     children: [
                       // card
-                      for (int i = 0; i < _titleS.length; i++)
+                      for (int i = 0; i < data.length; i++)
                         GestureDetector(
                           onTap: () {
-                            Get.to(() => DetailPage(url: _chaptersUrlS[i]),
+                            Get.to(
+                                () => DetailPage(
+                                      slug: data[i]['slug'],
+                                      url: data[i]['link'],
+                                    ),
                                 transition: Transition.fadeIn,
-                                duration: const Duration(milliseconds: 700));
+                                duration: const Duration(milliseconds: 600));
                           },
                           child: Padding(
                             padding: const EdgeInsets.all(3),
@@ -151,7 +131,7 @@ class _SearchPageState extends State<SearchPage> {
                                           CachedNetworkImage(
                                             // width: 225,
                                             height: 175,
-                                            imageUrl: _imageS[i],
+                                            imageUrl: data[i]['cover'],
                                             placeholder: (context, url) {
                                               // cupertino loader
                                               return const CupertinoActivityIndicator(
@@ -177,7 +157,7 @@ class _SearchPageState extends State<SearchPage> {
                                         children: [
                                           const SizedBox(height: 2),
                                           Text(
-                                            _titleS[i].toString(),
+                                            data[i]['title'].toString(),
                                             style: GoogleFonts.roboto(
                                               fontSize: 16,
                                               fontWeight: FontWeight.w600,
@@ -188,7 +168,7 @@ class _SearchPageState extends State<SearchPage> {
                                           // small text
                                           const SizedBox(height: 5),
                                           Text(
-                                            _chaptersS[i].toString(),
+                                            data[i]['last_chapter'].toString(),
                                             style: const TextStyle(
                                               fontSize: 12,
                                               color: Colors.grey,
@@ -202,7 +182,8 @@ class _SearchPageState extends State<SearchPage> {
                                             size: 18,
                                             allowHalfRating: true,
                                             value:
-                                                double.parse(_skorS[i]) / 2.0,
+                                                double.parse(data[i]['skor']) /
+                                                    2.0,
                                             onChanged: (value) {},
                                           ),
                                           const SizedBox(height: 7),

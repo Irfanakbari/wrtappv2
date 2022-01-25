@@ -52,9 +52,9 @@ class _NewerKomikState extends State<NewerKomik> {
                     for (var i = 0; i < widget.title.length; i++)
                       InkWell(
                         onTap: () {
-                          Get.to(() => DetailPage(
-                                url: widget.url[i],
-                              ));
+                          // Get.to(() => DetailPage(
+                          //       url: widget.url[i],
+                          //     ));
                         },
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 20),

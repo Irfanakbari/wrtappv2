@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_fadein/flutter_fadein.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as parser;
@@ -45,24 +46,27 @@ class _AllGenresState extends State<AllGenres> {
           title: const Text('Genre'),
           toolbarHeight: 70,
         ),
-        body: Obx(
-          () => (isLoading.value)
-              ? const Center(child: CircularProgressIndicator())
-              : ListView.builder(
-                  itemCount: genres.length,
-                  itemBuilder: (context, index) {
-                    return GestureDetector(
-                        onTap: () {
-                          Get.to(GenreResult(url: urlGenre[index]));
-                        },
-                        child: SizedBox(
-                            height: 50,
-                            child: Center(
-                              child: Text(genres[index],
-                                  style: const TextStyle(fontSize: 20)),
-                            )));
-                  },
-                ),
+        body: FadeIn(
+          duration: const Duration(milliseconds: 600),
+          child: Obx(
+            () => (isLoading.value)
+                ? const Center(child: CircularProgressIndicator())
+                : ListView.builder(
+                    itemCount: genres.length,
+                    itemBuilder: (context, index) {
+                      return GestureDetector(
+                          onTap: () {
+                            Get.to(GenreResult(url: urlGenre[index]));
+                          },
+                          child: SizedBox(
+                              height: 50,
+                              child: Center(
+                                child: Text(genres[index],
+                                    style: const TextStyle(fontSize: 20)),
+                              )));
+                    },
+                  ),
+          ),
         ));
   }
 }

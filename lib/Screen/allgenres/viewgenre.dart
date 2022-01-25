@@ -66,7 +66,13 @@ class _GenreResultState extends State<GenreResult> {
                         GestureDetector(
                           onTap: () {
                             Get.to(
-                              () => DetailPage(url: _chapters_urlG[i]),
+                              () => DetailPage(
+                                url: _chapters_urlG[i],
+                                slug: _chapters_urlG[i]
+                                    .toString()
+                                    .split('https://wrt.my.id/manga/')[1]
+                                    .split('/')[0],
+                              ),
                               transition: Transition.fadeIn,
                             );
                           },
