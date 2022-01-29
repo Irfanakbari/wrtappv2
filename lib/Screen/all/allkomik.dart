@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:getwidget/components/rating/gf_rating.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import '../detailpage.dart';
 import '../homepage/scrapdata.dart';
 import 'package:lazy_load_scrollview/lazy_load_scrollview.dart';
@@ -48,23 +49,23 @@ class _AllKomikState extends State<AllKomik> {
           toolbarHeight: 70,
           title: const Text("Daftar Komik"),
           actions: [
-            InkWell(
-              onTap: () {},
-              child: Padding(
-                  padding: const EdgeInsets.only(right: 10),
-                  child: Center(
-                    child: Text(
-                      "Text Mode",
-                      style: GoogleFonts.roboto(
-                        textStyle: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.red,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  )),
-            )
+            // InkWell(
+            //   onTap: () {},
+            //   child: Padding(
+            //       padding: const EdgeInsets.only(right: 10),
+            //       child: Center(
+            //         child: Text(
+            //           "Text Mode",
+            //           style: GoogleFonts.roboto(
+            //             textStyle: const TextStyle(
+            //               fontSize: 14,
+            //               color: Colors.red,
+            //               fontWeight: FontWeight.bold,
+            //             ),
+            //           ),
+            //         ),
+            //       )),
+            // )
           ],
         ),
         body: (datas.isNotEmpty)
@@ -175,12 +176,14 @@ class _AllKomikState extends State<AllKomik> {
                           ),
                         ),
                       ),
+
                     // card
                   ],
                 ),
               )
-            : const Center(
-                child: CircularProgressIndicator(),
+            : Center(
+                child: LoadingAnimationWidget.staggeredDotsWave(
+                    color: Theme.of(context).primaryColor, size: 60),
               ),
       ),
     );

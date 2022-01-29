@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wrtappv2/Auth/login.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -7,7 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:wrtappv2/Screen/homepage/scrapdata.dart';
 import 'package:wrtappv2/Screen/menupage.dart';
-import 'package:wrtappv2/const/abstract.dart';
+import 'package:wrtappv2/const/function.dart';
 import 'package:wrtappv2/const/tema.dart';
 import 'Auth/sys/auth.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -57,21 +58,19 @@ class MyApp extends StatelessWidget {
             home: Splash(),
           );
         } else {
-          return Obx(
-            () => GetMaterialApp(
-              title: 'World Romance Translation',
-              theme: (_tema.mode.value == 0)
-                  ? Tema.lightTheme
-                  : (_tema.mode.value == 1)
-                      ? Tema.darkTheme
-                      : (_tema.mode.value == 2)
-                          ? Tema.pinkTheme
-                          : Tema.pinkDarkTheme,
-              home: (_auth.currentUser == null)
-                  ? const LoginPage()
-                  : const MenuPage(),
-            ),
-          );
+          return Obx(() => GetMaterialApp(
+                title: 'World Romance Translation',
+                theme: (_tema.mode.value == 0)
+                    ? Tema.lightTheme
+                    : (_tema.mode.value == 1)
+                        ? Tema.darkTheme
+                        : (_tema.mode.value == 2)
+                            ? Tema.pinkTheme
+                            : Tema.pinkDarkTheme,
+                home: (_auth.currentUser == null)
+                    ? const LoginPage()
+                    : const MenuPage(),
+              ));
         }
       },
     );
@@ -110,12 +109,12 @@ class Init {
       Tema().mode.value = 3;
     }
     var home = Get.put(ScrapHome());
-    // _konst.setStatusAccount();
 
     isConfig.value = "Loading Config";
     await home.getData();
 
     _konst.validationDeviceID();
+    _konst.cekUpdate();
 
     await home.getAllKomik(1);
     isConfig.value = "Loading Data";
@@ -165,9 +164,8 @@ class _SplashState extends State<Splash> {
               ),
             ),
             const SizedBox(height: 20),
-            const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-            ),
+            LoadingAnimationWidget.staggeredDotsWave(
+                color: Colors.white, size: 40)
           ],
         ),
       ),

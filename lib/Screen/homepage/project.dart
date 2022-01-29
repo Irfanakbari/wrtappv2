@@ -88,71 +88,63 @@ class Project extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
-                            Card(
-                              shadowColor: Colors.black.withOpacity(0.5),
-                              color: Colors.transparent,
-                              elevation: 8,
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    flex: 8,
-                                    child: Column(
-                                      children: [
-                                        Stack(children: [
-                                          CachedNetworkImage(
-                                            cacheKey: data[i]["img"],
-                                            height: 165,
-                                            fadeInCurve: Curves.easeIn,
-                                            fadeInDuration: const Duration(
-                                                milliseconds: 500),
-                                            cacheManager: CacheManager(Config(
-                                              data[i]["img"],
-                                              stalePeriod:
-                                                  const Duration(hours: 2),
-                                            )),
-                                            placeholderFadeInDuration:
-                                                const Duration(
-                                                    milliseconds: 500),
-                                            imageUrl: data[i]["img"],
-                                            placeholder: (context, url) {
-                                              // cupertino loader
-                                              return const Center(
-                                                child:
-                                                    CupertinoActivityIndicator(
-                                                  radius: 10,
-                                                ),
-                                              );
-                                            },
-                                            errorWidget:
-                                                (context, url, error) =>
-                                                    const Icon(Icons.error),
-                                          ),
-                                          Positioned(
-                                            top: 0,
-                                            left: 5,
-                                            child: SizedBox(
-                                                width: 30,
-                                                height: 30,
-                                                child: Image.asset(
-                                                    'assets/img/manga.png')),
-                                          ),
-                                          (data[i]['hot'])
-                                              ? Positioned(
-                                                  bottom: 6,
-                                                  right: 5,
-                                                  child: SizedBox(
-                                                      width: 25,
-                                                      height: 30,
-                                                      child: Image.asset(
-                                                          'assets/img/hot1.png')),
-                                                )
-                                              : Container(),
-                                        ])
-                                      ],
-                                    ),
+                            Row(
+                              children: [
+                                Expanded(
+                                  flex: 5,
+                                  child: Column(
+                                    children: [
+                                      Stack(children: [
+                                        CachedNetworkImage(
+                                          cacheKey: data[i]["img"],
+                                          height: 165,
+                                          fadeInCurve: Curves.easeIn,
+                                          fadeInDuration:
+                                              const Duration(milliseconds: 500),
+                                          cacheManager: CacheManager(Config(
+                                            data[i]["img"],
+                                            stalePeriod:
+                                                const Duration(hours: 2),
+                                          )),
+                                          placeholderFadeInDuration:
+                                              const Duration(milliseconds: 500),
+                                          imageUrl: data[i]["img"],
+                                          placeholder: (context, url) {
+                                            // cupertino loader
+                                            return const Center(
+                                              child: CupertinoActivityIndicator(
+                                                radius: 10,
+                                              ),
+                                            );
+                                          },
+                                          errorWidget: (context, url, error) =>
+                                              const Icon(Icons.error),
+                                        ),
+                                        Positioned(
+                                          top: 0,
+                                          left: 5,
+                                          child: SizedBox(
+                                              width: 30,
+                                              height: 30,
+                                              child: Image.asset(
+                                                  'assets/img/manga.png')),
+                                        ),
+                                        (data[i]['hot'])
+                                            ? Positioned(
+                                                bottom: 6,
+                                                right: 5,
+                                                child: SizedBox(
+                                                    width: 25,
+                                                    height: 30,
+                                                    child: Image.asset(
+                                                        'assets/img/hot1.png')),
+                                              )
+                                            : Container(),
+                                      ])
+                                    ],
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                             Row(
                               children: <Widget>[

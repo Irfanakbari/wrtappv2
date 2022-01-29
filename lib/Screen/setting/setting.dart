@@ -11,10 +11,10 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wrtappv2/Auth/sys/auth.dart';
 import 'package:wrtappv2/Screen/bookmark/BmModel.dart';
-import 'package:wrtappv2/Screen/membership/buypage.dart';
 import 'package:wrtappv2/Screen/reading/sys/ModelRestore.dart';
 import 'package:wrtappv2/Screen/report/report.dart';
-import 'package:wrtappv2/const/abstract.dart';
+import 'package:wrtappv2/Screen/setting/log.dart';
+import 'package:wrtappv2/const/function.dart';
 import 'package:flutter/cupertino.dart';
 import '../../Auth/login.dart';
 import '../../const/tema.dart';
@@ -804,6 +804,33 @@ class Setting extends StatelessWidget {
                         )),
                   Padding(
                     padding: const EdgeInsets.only(left: 8),
+                    child: InkWell(
+                      onTap: () {
+                        Get.to(() => const LogPage(),
+                            transition: Transition.downToUp);
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        height: 50,
+                        decoration: const BoxDecoration(
+                            border: const Border(
+                                bottom: const BorderSide(
+                                    color: Colors.grey, width: 0.3))),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: const [
+                            Text(
+                              "Log Update",
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8),
                     child: Container(
                       width: double.infinity,
                       height: 50,
@@ -824,9 +851,7 @@ class Setting extends StatelessWidget {
                             child: Text(
                               _konst.versi.value,
                               style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16),
+                                  fontWeight: FontWeight.bold, fontSize: 16),
                             ),
                           ),
                         ],

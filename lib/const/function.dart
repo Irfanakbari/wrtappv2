@@ -1,8 +1,7 @@
 import 'dart:convert';
-import 'dart:math';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:midtrans_sdk/midtrans_sdk.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -18,7 +17,6 @@ import 'package:http/http.dart' as http;
 import 'package:device_info_plus/device_info_plus.dart';
 
 class Konst {
-  MidtransSDK? midtrans;
   Rx readQuality = "100".obs;
   RxBool isLoadingHome = false.obs;
   Rx isLoading = false.obs;
@@ -39,7 +37,6 @@ class Konst {
   FirebaseFirestore server = FirebaseFirestore.instance;
 
   Konst() {
-    initSDK();
     initUniqueIdentifierState();
     getQualityRead();
   }
@@ -84,19 +81,6 @@ class Konst {
     });
   }
 
-  void initSDK() async {
-    midtrans = await MidtransSDK.init(
-      config: MidtransConfig(
-        clientKey: "Mid-client-dUXPYcJYKoYPe4Im",
-        merchantBaseUrl: "https://app.midtrans.com/snap/v1/transactions",
-        language: 'id',
-      ),
-    );
-    midtrans?.setUIKitCustomSetting(
-      skipCustomerDetailsPages: true,
-    );
-  }
-
   Future<void> initUniqueIdentifierState() async {
     try {
       await deviceInfoPlugin.androidInfo.then((value) {
@@ -117,136 +101,6 @@ class Konst {
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
-  }
-
-  Future bayar(int total) async {
-    midtrans!.setTransactionFinishedCallback((result) async {
-      if (!result.isTransactionCanceled) {
-        await topUpAccount(total);
-      } else {
-        Get.snackbar(
-          "Pembayaran Gagal",
-          "Pembayaran dibatalkan",
-          icon: const Icon(
-            Icons.error,
-            color: Colors.white,
-          ),
-          duration: const Duration(seconds: 3),
-        );
-      }
-    });
-    midtrans?.startPaymentUiFlow(
-      token: await getSNAPKey(),
-    );
-  }
-
-  Future getSNAPKey() async {
-    var url = "https://app.midtrans.com/snap/v1/transactions";
-    var randomInt = Random().nextInt(1000);
-    var email = await getUserEmail();
-
-    var id = "PREM-$email-$randomInt";
-    var key = dotenv.env['MIDTRANS_AUTH'];
-    var response = await http.post(Uri.parse(url),
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-          "Authorization": key!,
-        },
-        body: jsonEncode({
-          "transaction_details": {"order_id": id, "gross_amount": 200},
-          "item_details": [
-            {
-              "id": "PREMIUM BASIC",
-              "price": 200,
-              "quantity": 1,
-              "name": "Premium basic 1 Hari",
-              "brand": "World Romance Translation",
-              "category": "Account",
-              "merchant_name": "World Romance Translation"
-            }
-          ],
-          "enabled_payments": ["gopay", "shopeepay"],
-          "shopeepay": {"callback_url": "http://shopeepay.com"},
-          "gopay": {
-            "enable_callback": true,
-            "callback_url": "http://gopay.com"
-          },
-        }));
-    var res = jsonDecode(response.body);
-    var snapToken = res['token'];
-    return snapToken;
-  }
-
-  Future topUpAccount(int total) async {
-    var email = await getUserEmail();
-    var data = await server.collection(email!).doc("premium").get();
-
-    if ((await data.data()!["expired"] as Timestamp)
-        .toDate()
-        .difference(DateTime.now())
-        .inSeconds
-        .isNegative) {
-      (await data.data()!["status"] == true)
-          ? await server.collection(email).doc("premium").update({
-              "expired": (await data.data()!["expired"] as Timestamp)
-                  .toDate()
-                  .add(Duration(days: total)),
-              "status": true,
-            })
-          : await server.collection(email).doc("premium").update({
-              "expired": DateTime.now().add(Duration(days: total)),
-              "status": true,
-            });
-      premiumStatus.value = true;
-      expPremium.value = (await data.data()!["expired"] as Timestamp).toDate();
-    } else {
-      await server.collection(email).doc("premium").update({
-        "expired": (await data.data()!["expired"] as Timestamp)
-            .toDate()
-            .add(Duration(days: total)),
-        "status": true,
-      });
-      premiumStatus.value = false;
-      expPremium.value = (await data.data()!["expired"] as Timestamp).toDate();
-    }
-    Get.snackbar(
-      "Pembayaran Berhasil",
-      "Pembayaran berhasil",
-      icon: const Icon(
-        Icons.check,
-        color: Colors.white,
-      ),
-      duration: const Duration(seconds: 3),
-    );
-  }
-
-  Future setStatusAccount() async {
-    var email = await getUserEmail();
-    if (!await server
-        .collection(email!)
-        .doc("premium")
-        .get()
-        .then((value) => value.exists)) {
-      await server.collection(email).doc("premium").set({
-        "status": false,
-        "expired": DateTime.now(),
-      });
-    }
-    var data = await server.collection(email).doc("premium").get();
-    if ((await data.data()!["expired"] as Timestamp)
-            .toDate()
-            .difference(DateTime.now())
-            .inSeconds >
-        0) {
-      await server.collection(email).doc("premium").update({"status": true});
-      premiumStatus.value = true;
-      expPremium.value = (data.data()!["expired"] as Timestamp).toDate();
-    } else {
-      await server.collection(email).doc("premium").update({"status": false});
-      premiumStatus.value = false;
-      expPremium.value = DateTime.now();
-    }
   }
 
   Future validationDeviceID() async {
@@ -292,20 +146,7 @@ class Konst {
   Future cekUpdate() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     String versionold = packageInfo.version;
-    var url = "https://data.wrt.my.id/version.json";
-    var response = await http.get(Uri.parse(url));
-    var data = await json.decode(response.body);
-    var version = await data['version'];
-    versi.value = version;
-    var message = await data['message'];
-    var urlUpdate = await data['url'];
-    if (version != versionold) {
-      Get.off(UpdatePage(
-        url: urlUpdate,
-        version: version,
-        message: message,
-      ));
-    }
+    versi.value = versionold;
   }
 
   Future setReadQuality(String quality) async {
@@ -320,13 +161,18 @@ class Konst {
   }
 
   Future<void> getStatusServer() async {
-    var url = "https://data.wrt.my.id/status.json";
-    var response = await http.get(Uri.parse(url));
-    var data = await json.decode(response.body);
-    var status = await data['status'];
-    var message = await data['message'];
-    if (status == "off") {
-      Get.offAll(CloseApp(message: message));
+    RemoteConfig remoteConfig = RemoteConfig.instance;
+    await remoteConfig.fetchAndActivate();
+    await remoteConfig.setConfigSettings(RemoteConfigSettings(
+      fetchTimeout: const Duration(seconds: 10),
+      minimumFetchInterval: const Duration(seconds: 10),
+    ));
+    var status = remoteConfig.getBool('status');
+
+    if (!status) {
+      Get.offAll(const CloseApp(
+          message:
+              "Aplikasi Ditutup Sementara, sedang ada perbaikan di sisi server"));
     }
   }
 

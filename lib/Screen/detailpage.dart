@@ -8,12 +8,13 @@ import 'package:get/route_manager.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:wrtappv2/Screen/Comment/disqus.dart';
 import 'package:wrtappv2/Screen/bookmark/BmModel.dart';
 import 'package:wrtappv2/Screen/homepage/scrapdata.dart';
 import 'package:wrtappv2/Screen/reading/reading.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:wrtappv2/const/abstract.dart';
+import 'package:wrtappv2/const/function.dart';
 
 class DetailPage extends StatefulWidget {
   final String slug;
@@ -831,8 +832,8 @@ class _DetailPageState extends State<DetailPage> {
                                                                   link: data[0]['list_chapter'][i]
                                                                       ["link"]),
                                                               transition:
-                                                                  Transition.fadeIn,
-                                                              duration: const Duration(milliseconds: 700));
+                                                                  Transition.downToUp,
+                                                              duration: const Duration(milliseconds: 500));
                                                         },
                                                       )
                                                   ])
@@ -910,10 +911,8 @@ class _DetailPageState extends State<DetailPage> {
                   ),
                 )
               : Center(
-                  child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                      Theme.of(context).primaryColor),
-                )),
+                  child: LoadingAnimationWidget.staggeredDotsWave(
+                      color: Theme.of(context).primaryColor, size: 60)),
         ));
   }
 }

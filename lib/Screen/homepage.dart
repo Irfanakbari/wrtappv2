@@ -1,13 +1,14 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:wrtappv2/Screen/Comment/chat.dart';
 import 'package:wrtappv2/Screen/homepage/lastupdate.dart';
 import 'package:wrtappv2/Screen/homepage/newkomik.dart';
 import 'package:wrtappv2/Screen/homepage/popular.dart';
 import 'package:wrtappv2/Screen/homepage/project.dart';
 import 'package:wrtappv2/Screen/search/searchpage.dart';
-import 'package:wrtappv2/const/abstract.dart';
+import 'package:wrtappv2/const/function.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'homepage/scrapdata.dart';
@@ -47,7 +48,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
 
     getData();
-    // konst.getStatusServer();
+    konst.getStatusServer();
     // konst.cekUpdate();
   }
 
@@ -134,10 +135,8 @@ class _HomePageState extends State<HomePage> {
                 ),
               )
             : Center(
-                child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(
-                    Theme.of(context).primaryColor),
-              )),
+                child: LoadingAnimationWidget.staggeredDotsWave(
+                    color: Theme.of(context).primaryColor, size: 60)),
       ),
     );
   }

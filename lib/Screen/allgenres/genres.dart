@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_fadein/flutter_fadein.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as parser;
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:wrtappv2/Screen/allgenres/viewgenre.dart';
 
 class AllGenres extends StatefulWidget {
@@ -13,22 +16,18 @@ class AllGenres extends StatefulWidget {
 }
 
 class _AllGenresState extends State<AllGenres> {
-  RxList<String> genres = <String>[].obs;
-  RxList<String> urlGenre = <String>[].obs;
+  RxList genres = [].obs;
+  RxList urlGenre = [].obs;
   RxBool isLoading = true.obs;
 
   Future<void> scrapGenre() async {
-    var url = 'https://wrt.my.id';
+    var url = 'https://api.wrt.my.id/api/genre';
     var response = await http.get(Uri.parse(url));
-    var document = parser.parse(response.body);
-    var genres =
-        document.getElementsByClassName('genre')[0].getElementsByTagName('li');
-    for (var i = 0; i < genres.length; i++) {
-      var genre = genres[i].getElementsByTagName('a')[0].text;
-      var genreUrl = genres[i].getElementsByTagName('a')[0].attributes['href'];
-      this.genres.add(genre);
-      urlGenre.add(genreUrl!);
-    }
+    var data = json.decode(response.body);
+    var genres = data['data'];
+    var urlGenre = genres.map((e) => e['link']).toList();
+    this.genres.value = genres.map((e) => e['genre']).toList();
+    this.urlGenre.value = urlGenre;
   }
 
   @override
@@ -50,7 +49,9 @@ class _AllGenresState extends State<AllGenres> {
           duration: const Duration(milliseconds: 600),
           child: Obx(
             () => (isLoading.value)
-                ? const Center(child: CircularProgressIndicator())
+                ? Center(
+                    child: LoadingAnimationWidget.staggeredDotsWave(
+                        color: Theme.of(context).primaryColor, size: 60))
                 : ListView.builder(
                     itemCount: genres.length,
                     itemBuilder: (context, index) {

@@ -7,7 +7,8 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wrtappv2/Screen/Comment/disqus.dart';
 import 'package:wrtappv2/Screen/homepage/scrapdata.dart';
-import 'package:wrtappv2/const/abstract.dart';
+import 'package:wrtappv2/const/function.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class ReadingPage extends StatefulWidget {
   final String postId;
@@ -95,7 +96,6 @@ class _ReadingPageState extends State<ReadingPage> {
     super.initState();
     scrapingData();
     setHistory();
-    print(widget.indx);
   }
 
   @override
@@ -173,11 +173,12 @@ class _ReadingPageState extends State<ReadingPage> {
                                 child: SizedBox(
                                   height: 300,
                                   width: Get.width,
-                                  child: const Center(
-                                    child: CupertinoActivityIndicator(
-                                      radius: 15,
-                                    ),
-                                  ),
+                                  child: Center(
+                                      child:
+                                          LoadingAnimationWidget.discreteCircle(
+                                              color: Theme.of(context)
+                                                  .primaryColor,
+                                              size: 30)),
                                 ),
                               ),
                             ),

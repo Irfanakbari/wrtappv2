@@ -40,7 +40,7 @@ class _NewerListState extends State<NewerList> {
   Widget build(BuildContext context) {
     return Obx(() => Scaffold(
           appBar: AppBar(
-            title: const Text('Project List'),
+            title: const Text('Update Terbaru'),
           ),
           body: (data.isNotEmpty)
               ? Padding(
