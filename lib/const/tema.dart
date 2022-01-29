@@ -99,6 +99,7 @@ class Tema {
     progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: Color.fromARGB(255, 255, 3, 129)),
   );
+
   static ThemeData pinkDarkTheme = ThemeData(
     dividerColor: Colors.white,
     // brightness: Brightness.dark,

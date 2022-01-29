@@ -8,21 +8,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:wrtappv2/Screen/detailpage.dart';
 
 class Popular extends StatelessWidget {
-  final title;
-  final url;
-  final image;
-  final skor;
-  final chapters;
-  final hot;
-  const Popular(
-      {Key? key,
-      this.title,
-      this.url,
-      this.image,
-      this.skor,
-      this.chapters,
-      this.hot})
-      : super(key: key);
+  final List data;
+  const Popular({Key? key, required this.data}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -32,18 +19,30 @@ class Popular extends StatelessWidget {
         width: Get.width,
         color: Theme.of(context).backgroundColor,
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.only(
+            left: 8,
+            right: 8,
+            top: 10,
+            bottom: 8,
+          ),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text("Popular Hari Ini",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                )),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text("Populer Hari Ini",
+                    style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600)),
+                // all button
+              ],
+            ),
             const SizedBox(height: 10),
+
             const Divider(
               height: 5,
             ),
+
             const SizedBox(height: 10),
             // gridview
             SizedBox(
@@ -55,11 +54,14 @@ class Popular extends StatelessWidget {
                 childAspectRatio: (Get.width / Get.height) * 1.05,
                 children: [
                   // card
-                  for (int i = 0; i < 6; i++)
+                  for (int i = 0; i < data.length; i++)
                     GestureDetector(
                       onTap: () {
                         Get.to(
-                          () => DetailPage(url: url[i]),
+                          () => DetailPage(
+                            slug: data[i]["slug"],
+                            url: data[i]['link'],
+                          ),
                           transition: Transition.fadeIn,
                         );
                       },
@@ -68,45 +70,68 @@ class Popular extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
-                            Row(
-                              children: [
-                                Expanded(
-                                  flex: 8,
-                                  child: Column(
-                                    children: [
-                                      Stack(children: [
-                                        CachedNetworkImage(
-                                          cacheKey: image[i],
-                                          cacheManager: CacheManager(Config(
-                                            image[i],
-                                            stalePeriod:
-                                                const Duration(hours: 2),
-                                          )),
-                                          height: 175,
-                                          imageUrl: image[i],
-                                          placeholder: (context, url) {
-                                            // cupertino loader
-                                            return const CupertinoActivityIndicator(
-                                              radius: 10,
-                                            );
-                                          },
-                                          errorWidget: (context, url, error) =>
-                                              const Icon(Icons.error),
-                                        ),
-                                        Positioned(
-                                          top: 5,
-                                          left: 5,
-                                          child: SizedBox(
-                                              width: 30,
-                                              height: 30,
-                                              child: Image.asset(
-                                                  'assets/img/manga.png')),
-                                        ),
-                                      ])
-                                    ],
+                            Card(
+                              shadowColor: Colors.black.withOpacity(0.5),
+                              color: Colors.transparent,
+                              elevation: 8,
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    flex: 8,
+                                    child: Column(
+                                      children: [
+                                        Stack(children: [
+                                          CachedNetworkImage(
+                                            height: 165,
+                                            fadeInCurve: Curves.easeIn,
+                                            fadeInDuration: const Duration(
+                                                milliseconds: 500),
+                                            cacheKey: data[i]["img"],
+                                            cacheManager: CacheManager(Config(
+                                              data[i]["img"],
+                                              stalePeriod:
+                                                  const Duration(hours: 2),
+                                            )),
+                                            imageUrl: data[i]["img"],
+                                            placeholder: (context, url) {
+                                              // cupertino loader
+                                              return const Center(
+                                                child:
+                                                    CupertinoActivityIndicator(
+                                                  radius: 10,
+                                                ),
+                                              );
+                                            },
+                                            errorWidget:
+                                                (context, url, error) =>
+                                                    const Icon(Icons.error),
+                                          ),
+                                          Positioned(
+                                            top: 5,
+                                            left: 5,
+                                            child: SizedBox(
+                                                width: 30,
+                                                height: 30,
+                                                child: Image.asset(
+                                                    'assets/img/manga.png')),
+                                          ),
+                                          (data[i]['hot'])
+                                              ? Positioned(
+                                                  bottom: 5,
+                                                  right: 5,
+                                                  child: SizedBox(
+                                                      width: 25,
+                                                      height: 25,
+                                                      child: Image.asset(
+                                                          'assets/img/hot1.png')),
+                                                )
+                                              : Container(),
+                                        ])
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                             Row(
                               children: <Widget>[
@@ -118,7 +143,7 @@ class Popular extends StatelessWidget {
                                     children: [
                                       const SizedBox(height: 2),
                                       Text(
-                                        title[i],
+                                        data[i]["title"],
                                         style: GoogleFonts.roboto(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w600,
@@ -128,7 +153,7 @@ class Popular extends StatelessWidget {
                                       // small text
                                       const SizedBox(height: 5),
                                       Text(
-                                        chapters[i].toString(),
+                                        data[i]["last_chapter"],
                                         style: const TextStyle(
                                           fontSize: 12,
                                           color: Colors.grey,
@@ -141,7 +166,8 @@ class Popular extends StatelessWidget {
                                         borderColor: Colors.red,
                                         size: 18,
                                         allowHalfRating: true,
-                                        value: double.parse(skor[i]) / 2.0,
+                                        value:
+                                            double.parse(data[i]['skor']) / 2.0,
                                         onChanged: (value) {},
                                       ),
                                       const SizedBox(height: 7),
@@ -153,9 +179,7 @@ class Popular extends StatelessWidget {
                           ],
                         ),
                       ),
-                    ),
-
-                  // card
+                    ), // card
                 ],
               ),
             )

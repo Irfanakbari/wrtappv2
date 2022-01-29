@@ -1,4 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:tools="http://schemas.android.com/tools"
     package="com.example.wrtappv2">
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -7,6 +8,8 @@
     
    <application
         android:label="World Romance Translation"
+        tools:replace="android:label"
+        android:theme="@style/AppTheme"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <meta-data android:name="com.onesignal.suppressLaunchURLs" android:value="true"/>

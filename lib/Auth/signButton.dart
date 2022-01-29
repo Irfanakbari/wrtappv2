@@ -6,7 +6,7 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:wrtappv2/Auth/sys/auth.dart';
 import 'package:wrtappv2/ErrorPage/iderror.dart';
 import 'package:wrtappv2/Screen/menupage.dart';
-import 'package:wrtappv2/const/abstract.dart';
+import 'package:wrtappv2/const/function.dart';
 
 class GoogleSignInButton extends StatefulWidget {
   const GoogleSignInButton({Key? key}) : super(key: key);

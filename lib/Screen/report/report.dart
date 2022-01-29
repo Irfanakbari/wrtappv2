@@ -1,7 +1,7 @@
 import 'package:get/get_instance/src/extension_instance.dart';
 import 'package:get/route_manager.dart';
 import 'package:flutter/material.dart';
-import 'package:wrtappv2/const/abstract.dart';
+import 'package:wrtappv2/const/function.dart';
 
 class ReportPage extends StatelessWidget {
   const ReportPage({Key? key}) : super(key: key);

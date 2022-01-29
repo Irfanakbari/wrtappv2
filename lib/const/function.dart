@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -28,7 +30,11 @@ class Konst {
   RxBool statusID = true.obs;
   var user = Auth();
   Rx versi = "".obs;
+  var topUpAmount = 0.obs;
+  RxBool premiumStatus = false.obs;
+  var expPremium = DateTime.now().obs;
   static final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
+  FirebaseFirestore server = FirebaseFirestore.instance;
 
   Konst() {
     initUniqueIdentifierState();
@@ -51,16 +57,26 @@ class Konst {
     OneSignal.shared
         .setNotificationOpenedHandler((OSNotificationOpenedResult result) {
       if (result.notification.launchUrl!.contains('manga')) {
-        Future.delayed(const Duration(milliseconds: 1000), () {
-          Get.to(DetailPage(url: result.notification.launchUrl.toString()));
+        Future.delayed(const Duration(milliseconds: 2000), () {
+          var slug = result.notification.launchUrl
+              .toString()
+              .split('https://wrt.my.id/manga/')[1]
+              .split('/')[0];
+          Get.to(DetailPage(
+            url: result.notification.launchUrl.toString(),
+            slug: slug,
+          ));
         });
       } else {
         var url = result.notification.launchUrl.toString();
         url = url.substring(url.indexOf(".id/") + 4);
         url = "https://wrt.my.id/manga/$url";
-        // get before -chapter-
         url = url.substring(0, url.indexOf("-chapter-"));
-        Get.to(DetailPage(url: url));
+        var slug = url.split('https://wrt.my.id/manga/')[1].split('/')[0];
+        Get.to(DetailPage(
+          url: url,
+          slug: slug,
+        ));
       }
     });
   }
@@ -88,8 +104,6 @@ class Konst {
   }
 
   Future validationDeviceID() async {
-    FirebaseFirestore server = FirebaseFirestore.instance;
-
     var email = await getUserEmail();
     var _idAtServer = await server.collection(email!).doc("device").get();
     await server.collection(email).doc("type").set({
@@ -132,20 +146,7 @@ class Konst {
   Future cekUpdate() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     String versionold = packageInfo.version;
-    var url = "https://data.wrt.my.id/version.json";
-    var response = await http.get(Uri.parse(url));
-    var data = await json.decode(response.body);
-    var version = await data['version'];
-    versi.value = version;
-    var message = await data['message'];
-    var urlUpdate = await data['url'];
-    if (version != versionold) {
-      Get.off(UpdatePage(
-        url: urlUpdate,
-        version: version,
-        message: message,
-      ));
-    }
+    versi.value = versionold;
   }
 
   Future setReadQuality(String quality) async {
@@ -156,24 +157,28 @@ class Konst {
 
   Future getQualityRead() async {
     var prefs = await SharedPreferences.getInstance();
-    readQuality.value = prefs.getString("readQuality") ?? "100";
+    readQuality.value = prefs.getString("readQuality") ?? "High";
   }
 
   Future<void> getStatusServer() async {
-    var url = "https://data.wrt.my.id/status.json";
-    var response = await http.get(Uri.parse(url));
-    var data = await json.decode(response.body);
-    var status = await data['status'];
-    var message = await data['message'];
-    if (status == "off") {
-      Get.offAll(CloseApp(message: message));
+    RemoteConfig remoteConfig = RemoteConfig.instance;
+    await remoteConfig.fetchAndActivate();
+    await remoteConfig.setConfigSettings(RemoteConfigSettings(
+      fetchTimeout: const Duration(seconds: 10),
+      minimumFetchInterval: const Duration(seconds: 10),
+    ));
+    var status = remoteConfig.getBool('status');
+
+    if (!status) {
+      Get.offAll(const CloseApp(
+          message:
+              "Aplikasi Ditutup Sementara, sedang ada perbaikan di sisi server"));
     }
   }
 
   Future<void> sendReport(String message) async {
-    var url =
-        "null";
-    var response = await http.post(Uri.parse(url),
+    var url = dotenv.env['WEBHOOK_REPORT'];
+    var response = await http.post(Uri.parse(url!),
         headers: {
           "Content-Type": "application/json",
         },
@@ -241,9 +246,8 @@ class Konst {
     var data2 = await json.decode(response2.body);
     var isp = data2['isp'].toString();
 
-    var url =
-        "null";
-    var response = await http.post(Uri.parse(url),
+    var url = dotenv.env['WEBHOOK_CHAPTER_REPORT'];
+    var response = await http.post(Uri.parse(url!),
         headers: {
           "Content-Type": "application/json",
         },
@@ -289,9 +293,4 @@ class Konst {
   }
 }
 
-class CacheImg extends ImageCache {
-  @override
-  void clear() {
-    super.clear();
-  }
-}
+class CacheImg extends ImageCache {}
