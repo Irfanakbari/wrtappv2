@@ -27,7 +27,7 @@ class _BookmarkPageState extends State<BookmarkPage> {
     var data = await bm.getAllBookmark();
     if (data != null) {
       dataList.value = data;
-      legt.value = data.length;
+      legt.value = dataList.length;
       isLoading.value = false;
     }
   }
@@ -177,7 +177,7 @@ class _BookmarkPageState extends State<BookmarkPage> {
                                                   ),
                                                   const SizedBox(height: 2),
                                                   Text(
-                                                    dataList[i]['title'],
+                                                    dataList[i]["title"],
                                                     style: const TextStyle(
                                                       overflow:
                                                           TextOverflow.ellipsis,

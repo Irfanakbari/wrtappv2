@@ -2,6 +2,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_fadein/flutter_fadein.dart';
 import 'package:get/get_instance/src/extension_instance.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
@@ -9,26 +10,32 @@ import 'package:get/route_manager.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:wrtappv2/Auth/sys/auth.dart';
 import 'package:wrtappv2/Screen/bookmark/BmModel.dart';
 import 'package:wrtappv2/Screen/reading/sys/ModelRestore.dart';
 import 'package:wrtappv2/Screen/report/report.dart';
 import 'package:wrtappv2/Screen/setting/log.dart';
-import 'package:wrtappv2/const/function.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:wrtappv2/controller/auth_controller.dart';
+import 'package:wrtappv2/controller/notif_controller.dart';
+import 'package:wrtappv2/controller/setting_controller.dart';
+import 'package:wrtappv2/controller/splash_controller.dart';
 import '../../Auth/login.dart';
 import '../../const/tema.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class Setting extends StatelessWidget {
   const Setting({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    Auth _auth = Get.find<Auth>();
+    AuthC _auth = Get.find<AuthC>();
+    var notifC = Get.find<NotifC>();
+    var settingC = Get.find<SettingC>();
+    var splashC = Get.find<SplashC>();
     var _tema = Get.find<Tema>();
-    var _konst = Get.find<Konst>();
     var cons = Get.find<Tema>();
+    var backup = Get.put(BmModel());
+    var mr = Get.find<RestoreBookmark>();
     final FirebaseAuth _user = FirebaseAuth.instance;
 
     // scroll controller
@@ -222,16 +229,22 @@ class Setting extends StatelessWidget {
                                 CupertinoActionSheetAction(
                                   child: const Text("Hidup"),
                                   onPressed: () async {
-                                    _konst.notifStatus.value = false;
-                                    _konst.changeStatusNotif();
+                                    notifC.notifStatus.value = false;
+                                    notifC.changeStatusNotif();
+                                    await FirebaseMessaging.instance
+                                        .subscribeToTopic('all');
+
                                     Get.back();
                                   },
                                 ),
                                 CupertinoActionSheetAction(
                                   child: const Text("Mati"),
                                   onPressed: () async {
-                                    _konst.notifStatus.value = true;
-                                    _konst.changeStatusNotif();
+                                    notifC.notifStatus.value = true;
+                                    notifC.changeStatusNotif();
+                                    await FirebaseMessaging.instance
+                                        .unsubscribeFromTopic('all');
+
                                     Get.back();
                                   },
                                 ),
@@ -271,7 +284,7 @@ class Setting extends StatelessWidget {
                                       Padding(
                                           padding:
                                               const EdgeInsets.only(right: 8),
-                                          child: (!_konst.notifStatus.value)
+                                          child: (!notifC.notifStatus.value)
                                               ? const Text(
                                                   "Hidup",
                                                   style: const TextStyle(
@@ -309,21 +322,21 @@ class Setting extends StatelessWidget {
                                 CupertinoActionSheetAction(
                                   child: const Text("High"),
                                   onPressed: () async {
-                                    _konst.setReadQuality("High");
+                                    settingC.setReadQuality("High");
                                     Get.back();
                                   },
                                 ),
                                 CupertinoActionSheetAction(
                                   child: const Text("Med"),
                                   onPressed: () async {
-                                    _konst.setReadQuality("Med");
+                                    settingC.setReadQuality("Med");
                                     Get.back();
                                   },
                                 ),
                                 CupertinoActionSheetAction(
                                   child: const Text("Low"),
                                   onPressed: () async {
-                                    _konst.setReadQuality("Low");
+                                    settingC.setReadQuality("Low");
                                     Get.back();
                                   },
                                 )
@@ -364,7 +377,7 @@ class Setting extends StatelessWidget {
                                         padding:
                                             const EdgeInsets.only(right: 8),
                                         child: Text(
-                                          _konst.readQuality.value,
+                                          settingC.readQuality.value,
                                           style: const TextStyle(
                                               fontSize: 14, color: Colors.grey),
                                         ),
@@ -447,6 +460,34 @@ class Setting extends StatelessWidget {
                                     Get.back();
                                   },
                                 ),
+                                CupertinoActionSheetAction(
+                                  child: const Text("Green Light"),
+                                  onPressed: () async {
+                                    var prefs =
+                                        await SharedPreferences.getInstance();
+                                    _tema.mode.value = 4;
+                                    prefs
+                                        .setInt('tema', _tema.mode.value)
+                                        .then((value) {
+                                      cons.navIndex.value = 4;
+                                    });
+                                    Get.back();
+                                  },
+                                ),
+                                CupertinoActionSheetAction(
+                                  child: const Text("Green Dark"),
+                                  onPressed: () async {
+                                    var prefs =
+                                        await SharedPreferences.getInstance();
+                                    _tema.mode.value = 5;
+                                    prefs
+                                        .setInt('tema', _tema.mode.value)
+                                        .then((value) {
+                                      cons.navIndex.value = 4;
+                                    });
+                                    Get.back();
+                                  },
+                                ),
                               ],
                             ),
                           );
@@ -504,12 +545,34 @@ class Setting extends StatelessWidget {
                                                             color: Colors.grey,
                                                             fontSize: 14),
                                                       )
-                                                    : const Text(
-                                                        "Pink Dark",
-                                                        style: const TextStyle(
-                                                            color: Colors.grey,
-                                                            fontSize: 14),
-                                                      ),
+                                                    : (_tema.mode.value == 3)
+                                                        ? const Text(
+                                                            "Pink Dark",
+                                                            style:
+                                                                const TextStyle(
+                                                                    color: Colors
+                                                                        .grey,
+                                                                    fontSize:
+                                                                        14),
+                                                          )
+                                                        : (_tema.mode.value ==
+                                                                4)
+                                                            ? const Text(
+                                                                "Green Light",
+                                                                style: const TextStyle(
+                                                                    color: Colors
+                                                                        .grey,
+                                                                    fontSize:
+                                                                        14),
+                                                              )
+                                                            : const Text(
+                                                                "Green Dark",
+                                                                style: const TextStyle(
+                                                                    color: Colors
+                                                                        .grey,
+                                                                    fontSize:
+                                                                        14),
+                                                              ),
                                       ),
                                     ],
                                   )
@@ -540,7 +603,6 @@ class Setting extends StatelessWidget {
                                 CupertinoDialogAction(
                                   child: const Text("Ya"),
                                   onPressed: () async {
-                                    var backup = BmModel();
                                     backup.saveToServer();
                                     Get.back();
                                   },
@@ -561,17 +623,36 @@ class Setting extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
-                                children: const [
-                                  Icon(Icons.sync),
-                                  SizedBox(
-                                    width: 10,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: const [
+                                      Icon(Icons.sync),
+                                      SizedBox(
+                                        width: 10,
+                                      ),
+                                      Text(
+                                        "Backup Data",
+                                        style: TextStyle(fontSize: 16),
+                                      ),
+                                    ],
                                   ),
-                                  Text(
-                                    "Backup Data",
-                                    style: TextStyle(fontSize: 16),
-                                  ),
+                                  Row(
+                                    children: [
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(right: 8),
+                                        child: Text(
+                                          mr.statusUp.value,
+                                          style: const TextStyle(
+                                              color: Colors.grey, fontSize: 14),
+                                        ),
+                                      ),
+                                    ],
+                                  )
                                 ],
-                              ),
+                              )
                             ],
                           ),
                         ),
@@ -597,8 +678,7 @@ class Setting extends StatelessWidget {
                                 FlatButton(
                                   child: const Text("Ya"),
                                   onPressed: () async {
-                                    var restoe = RestoreBookmark();
-                                    restoe.getData();
+                                    mr.getData();
 
                                     Get.back();
                                   },
@@ -619,28 +699,125 @@ class Setting extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
-                                children: const [
-                                  Icon(Icons.download),
-                                  SizedBox(
-                                    width: 10,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: const [
+                                      Icon(Icons.download),
+                                      SizedBox(
+                                        width: 10,
+                                      ),
+                                      Text(
+                                        "Restore Data",
+                                        style: TextStyle(fontSize: 16),
+                                      ),
+                                    ],
                                   ),
-                                  Text(
-                                    "Restore Data",
-                                    style: TextStyle(fontSize: 16),
+                                  Row(
+                                    children: [
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(right: 8),
+                                        child: Text(
+                                          mr.statusDown.value,
+                                          style: const TextStyle(
+                                              color: Colors.grey, fontSize: 14),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
-                              ),
+                              )
                             ],
                           ),
                         ),
                       )),
+                  (splashC.bolehAmbilLama.value == 0)
+                      ? Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: InkWell(
+                            onTap: () {
+                              //  confirm di
+                              // alog
+                              Get.dialog(
+                                AlertDialog(
+                                  title: const Text("Konfirmasi"),
+                                  content: const Text(
+                                      "Anda hanya dapat mengambil data dari server lama sebanyak 1 kali, setelahnya data akan diambil dari server baru"),
+                                  actions: [
+                                    FlatButton(
+                                      child: const Text("Tidak"),
+                                      onPressed: () {
+                                        Get.back();
+                                      },
+                                    ),
+                                    FlatButton(
+                                      child: const Text("Ya"),
+                                      onPressed: () async {
+                                        mr.getDataLama();
+
+                                        Get.back();
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                            child: Container(
+                              width: double.infinity,
+                              height: 50,
+                              decoration: const BoxDecoration(
+                                  border: const Border(
+                                      bottom: const BorderSide(
+                                          color: Colors.grey, width: 0.3))),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: const [
+                                          Icon(Icons.download),
+                                          SizedBox(
+                                            width: 10,
+                                          ),
+                                          Text(
+                                            "Restore Data (Dari Server Lama)",
+                                            style: TextStyle(fontSize: 16),
+                                          ),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          Padding(
+                                            padding:
+                                                const EdgeInsets.only(right: 8),
+                                            child: Text(
+                                              mr.statusDown.value,
+                                              style: const TextStyle(
+                                                  color: Colors.grey,
+                                                  fontSize: 14),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  )
+                                ],
+                              ),
+                            ),
+                          ))
+                      : Container(),
                   Padding(
                       padding: const EdgeInsets.only(left: 8),
                       child: InkWell(
                         onTap: () async {
                           // show confirm dialog cupertino
                           await DefaultCacheManager().emptyCache();
-                          CacheImg().clear();
                           Get.snackbar(
                             'Berhasil',
                             'Cache berhasil dihapus',
@@ -849,7 +1026,7 @@ class Setting extends StatelessWidget {
                           Padding(
                             padding: const EdgeInsets.only(right: 15),
                             child: Text(
-                              _konst.versi.value,
+                              splashC.versi.value,
                               style: const TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 16),
                             ),

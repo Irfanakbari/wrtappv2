@@ -4,7 +4,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as parse;
 import 'package:get/get.dart';
-import 'package:wrtappv2/Screen/homepage/newkomik.dart';
 
 class ScrapHome {
   // popular
