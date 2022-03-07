@@ -16,12 +16,12 @@ class GenreResult extends StatefulWidget {
 
 class _GenreResultState extends State<GenreResult> {
   var fungsi = Get.find<ScrapHome>();
-  var _titleG = [].obs;
-  var _chaptersG = [].obs;
-  var _chapters_urlG = [].obs;
-  var _imageG = [].obs;
+  final _titleG = [].obs;
+  final _chaptersG = [].obs;
+  final _chapters_urlG = [].obs;
+  final _imageG = [].obs;
   RxBool isLoading = true.obs;
-  var _skorG = [].obs;
+  final _skorG = [].obs;
 
   getData() async {
     fungsi.titleG.clear();
@@ -66,7 +66,13 @@ class _GenreResultState extends State<GenreResult> {
                         GestureDetector(
                           onTap: () {
                             Get.to(
-                              () => DetailPage(url: _chapters_urlG[i]),
+                              () => DetailPage(
+                                url: _chapters_urlG[i],
+                                slug: _chapters_urlG[i]
+                                    .toString()
+                                    .split('https://wrt.my.id/manga/')[1]
+                                    .split('/')[0],
+                              ),
                               transition: Transition.fadeIn,
                             );
                           },

@@ -4,16 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get/route_manager.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wrtappv2/Screen/all/project.dart';
 import 'package:wrtappv2/Screen/detailpage.dart';
 
 class Project extends StatelessWidget {
-  final titlePj;
-  final imagePj;
-  final linkPj;
-  final chaptersPj;
-  const Project(
-      {Key? key, this.titlePj, this.imagePj, this.linkPj, this.chaptersPj})
-      : super(key: key);
+  final List data;
+  const Project({Key? key, required this.data}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -23,17 +19,47 @@ class Project extends StatelessWidget {
         width: Get.width,
         color: Theme.of(context).backgroundColor,
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text("Project WRT",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                )),
-            const SizedBox(height: 10),
+          padding: const EdgeInsets.only(
+            left: 8,
+            right: 8,
+            top: 4,
+            bottom: 20,
+          ),
+          child: Column(mainAxisAlignment: MainAxisAlignment.start, children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text("Project Update",
+                    style: GoogleFonts.poppins(
+                        fontSize: 18, fontWeight: FontWeight.w600)),
+                // all button
+                Row(
+                  children: [
+                    FlatButton(
+                      onPressed: () {
+                        Get.to(() => const ProjectList(),
+                            transition: Transition.downToUp);
+                      },
+                      child: const Text(
+                        "Lihat Semua",
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.redAccent,
+                        ),
+                      ),
+                    ),
+                    const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 13,
+                      color: Colors.redAccent,
+                    ),
+                  ],
+                ),
+              ],
+            ),
             const Divider(
               height: 5,
+              color: Colors.grey,
             ),
             const SizedBox(height: 10),
             // gridview
@@ -46,11 +72,14 @@ class Project extends StatelessWidget {
                 childAspectRatio: (Get.width / Get.height) * 1.13,
                 children: [
                   // card
-                  for (int i = 0; i < titlePj.length + 0; i++)
+                  for (int i = 0; i < data.length + 0; i++)
                     GestureDetector(
                       onTap: () async {
                         Get.to(
-                          () => DetailPage(url: linkPj[i]),
+                          () => DetailPage(
+                            slug: data[i]["slug"],
+                            url: data[i]['link'],
+                          ),
                           transition: Transition.fadeIn,
                         );
                       },
@@ -62,26 +91,30 @@ class Project extends StatelessWidget {
                             Row(
                               children: [
                                 Expanded(
-                                  flex: 8,
+                                  flex: 5,
                                   child: Column(
                                     children: [
                                       Stack(children: [
                                         CachedNetworkImage(
-                                          cacheKey: imagePj[i],
-                                          width: Get.width * 0.3,
+                                          cacheKey: data[i]["img"],
                                           height: 165,
+                                          fadeInCurve: Curves.easeIn,
+                                          fadeInDuration:
+                                              const Duration(milliseconds: 500),
                                           cacheManager: CacheManager(Config(
-                                            imagePj[i],
+                                            data[i]["img"],
                                             stalePeriod:
                                                 const Duration(hours: 2),
                                           )),
                                           placeholderFadeInDuration:
                                               const Duration(milliseconds: 500),
-                                          imageUrl: imagePj[i],
+                                          imageUrl: data[i]["img"],
                                           placeholder: (context, url) {
                                             // cupertino loader
-                                            return const CupertinoActivityIndicator(
-                                              radius: 10,
+                                            return const Center(
+                                              child: CupertinoActivityIndicator(
+                                                radius: 10,
+                                              ),
                                             );
                                           },
                                           errorWidget: (context, url, error) =>
@@ -96,6 +129,17 @@ class Project extends StatelessWidget {
                                               child: Image.asset(
                                                   'assets/img/manga.png')),
                                         ),
+                                        (data[i]['hot'])
+                                            ? Positioned(
+                                                bottom: 6,
+                                                right: 5,
+                                                child: SizedBox(
+                                                    width: 25,
+                                                    height: 30,
+                                                    child: Image.asset(
+                                                        'assets/img/hot1.png')),
+                                              )
+                                            : Container(),
                                       ])
                                     ],
                                   ),
@@ -112,7 +156,7 @@ class Project extends StatelessWidget {
                                     children: [
                                       const SizedBox(height: 2),
                                       Text(
-                                        titlePj[i],
+                                        data[i]["title"],
                                         style: GoogleFonts.roboto(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w600,
@@ -122,17 +166,27 @@ class Project extends StatelessWidget {
                                       // small text
                                       const SizedBox(height: 5),
                                       // for each chapter
-                                      for (int j = 0;
-                                          j < chaptersPj[i].length;
-                                          j++)
-                                        Text(
-                                          "• " + chaptersPj[i][j].toString(),
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.grey,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+
+                                      Text(
+                                        data[i]["last_chapter"],
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.grey,
+                                          fontWeight: FontWeight.bold,
                                         ),
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                      ),
+                                      const SizedBox(height: 5),
+                                      Text(
+                                        data[i]["last_update"],
+                                        style: const TextStyle(
+                                            fontSize: 13,
+                                            color: Color.fromARGB(
+                                                255, 192, 191, 191),
+                                            fontWeight: FontWeight.normal,
+                                            fontStyle: FontStyle.italic),
+                                      ),
                                     ],
                                   ),
                                 ),

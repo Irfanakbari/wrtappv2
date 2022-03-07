@@ -1,7 +1,7 @@
 // ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:wrtappv2/Auth/signButton.dart';
-import 'sys/auth.dart';
+import 'package:wrtappv2/controller/auth_controller.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -35,7 +35,7 @@ class LoginPage extends StatelessWidget {
                 ),
               ),
               FutureBuilder(
-                future: Auth.initializeFirebase(),
+                future: AuthC.initializeFirebase(),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
                     return const Text('Error initializing Firebase');

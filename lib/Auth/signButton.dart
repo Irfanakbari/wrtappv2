@@ -3,10 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:wrtappv2/Auth/sys/auth.dart';
 import 'package:wrtappv2/ErrorPage/iderror.dart';
 import 'package:wrtappv2/Screen/menupage.dart';
-import 'package:wrtappv2/const/abstract.dart';
+import 'package:wrtappv2/controller/auth_controller.dart';
+import 'package:wrtappv2/controller/splash_controller.dart';
 
 class GoogleSignInButton extends StatefulWidget {
   const GoogleSignInButton({Key? key}) : super(key: key);
@@ -20,7 +20,7 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
 
   @override
   Widget build(BuildContext context) {
-    Auth _auth = Auth();
+    var authC = Get.find<AuthC>();
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: _isSigningIn
@@ -38,7 +38,7 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
                 ),
               ),
               onPressed: () async {
-                var _konst = Get.find<Konst>();
+                var _konst = Get.find<SplashC>();
                 setState(() {
                   _isSigningIn = true;
                 });
@@ -47,7 +47,7 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
                   setState(() {
                     _isSigningIn = true;
                   });
-                  UserCredential user = await _auth.signInWithGoogle();
+                  UserCredential user = await authC.signInWithGoogle();
 
                   if (user.user != null) {
                     _konst.validationDeviceID().then((value) {
@@ -56,7 +56,7 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
                             transition: Transition.fadeIn,
                             duration: const Duration(milliseconds: 600));
                       } else {
-                        Get.offAll(const MenuPage(),
+                        Get.offAll(() => const MenuPage(),
                             transition: Transition.fadeIn,
                             duration: const Duration(milliseconds: 600));
                       }

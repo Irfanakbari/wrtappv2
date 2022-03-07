@@ -1,14 +1,14 @@
 import 'package:get/get_instance/src/extension_instance.dart';
 import 'package:get/route_manager.dart';
 import 'package:flutter/material.dart';
-import 'package:wrtappv2/const/abstract.dart';
+import 'package:wrtappv2/controller/report_controller.dart';
 
 class ReportPage extends StatelessWidget {
   const ReportPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    var konst = Get.find<Konst>();
+    var reportC = Get.put(ReportC());
     TextEditingController _controller = TextEditingController();
     return Scaffold(
       appBar: AppBar(
@@ -41,7 +41,7 @@ class ReportPage extends StatelessWidget {
               RaisedButton(
                 child: const Text('Kirim'),
                 onPressed: () async {
-                  konst.sendReport(_controller.text);
+                  reportC.sendReport(_controller.text);
                 },
               ),
             ],

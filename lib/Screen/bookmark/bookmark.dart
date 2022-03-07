@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:flutter_fadein/flutter_fadein.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wrtappv2/Screen/bookmark/BmModel.dart';
@@ -26,7 +27,7 @@ class _BookmarkPageState extends State<BookmarkPage> {
     var data = await bm.getAllBookmark();
     if (data != null) {
       dataList.value = data;
-      legt.value = data.length;
+      legt.value = dataList.length;
       isLoading.value = false;
     }
   }
@@ -53,6 +54,9 @@ class _BookmarkPageState extends State<BookmarkPage> {
         body: (!isLoading.value)
             ? (legt.value != 0)
                 ? Center(
+                    child: FadeIn(
+                    duration: const Duration(milliseconds: 600),
+                    curve: Curves.easeIn,
                     child: SizedBox(
                         height: Get.height,
                         child: SingleChildScrollView(
@@ -108,7 +112,21 @@ class _BookmarkPageState extends State<BookmarkPage> {
                                           for (int i = 0; i < legt.value; i++)
                                             GestureDetector(
                                               onTap: () {
+                                                var slug = "";
+                                                if (!dataList[i]['url']
+                                                    .toString()
+                                                    .contains("wrt.my.id")) {
+                                                  slug = dataList[i]['url']
+                                                      .toString();
+                                                } else {
+                                                  slug = dataList[i]['url']
+                                                      .toString()
+                                                      .split(
+                                                          'https://wrt.my.id/manga/')[1]
+                                                      .split('/')[0];
+                                                }
                                                 Get.to(() => DetailPage(
+                                                    slug: slug,
                                                     url: dataList[i]['url']));
                                               },
                                               child: Column(
@@ -159,7 +177,7 @@ class _BookmarkPageState extends State<BookmarkPage> {
                                                   ),
                                                   const SizedBox(height: 2),
                                                   Text(
-                                                    dataList[i]['title'],
+                                                    dataList[i]["title"],
                                                     style: const TextStyle(
                                                       overflow:
                                                           TextOverflow.ellipsis,
@@ -182,7 +200,8 @@ class _BookmarkPageState extends State<BookmarkPage> {
                               )
                             ],
                           ),
-                        )))
+                        )),
+                  ))
                 : Center(
                     child: Text("No Bookmark",
                         style: GoogleFonts.chakraPetch(

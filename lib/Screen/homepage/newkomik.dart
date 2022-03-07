@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_core/get_core.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
-import 'package:wrtappv2/Screen/detailpage.dart';
 
 class NewerKomik extends StatefulWidget {
   final List title;
@@ -52,15 +51,20 @@ class _NewerKomikState extends State<NewerKomik> {
                     for (var i = 0; i < widget.title.length; i++)
                       InkWell(
                         onTap: () {
-                          Get.to(() => DetailPage(
-                                url: widget.url[i],
-                              ));
+                          // Get.to(() => DetailPage(
+                          //       url: widget.url[i],
+                          //     ));
                         },
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 20),
                           child: Row(
                             children: [
-                              Image.network(widget.image[i], fit: BoxFit.cover),
+                              Image.network(
+                                widget.image[i],
+                                fit: BoxFit.cover,
+                                height: 85,
+                                width: 65,
+                              ),
                               const SizedBox(width: 10),
                               Expanded(
                                 child: Column(

@@ -1,16 +1,22 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:wrtappv2/ErrorPage/closeapp.dart';
 import 'package:wrtappv2/Screen/Comment/chat.dart';
+import 'package:wrtappv2/Screen/carousel.dart';
 import 'package:wrtappv2/Screen/homepage/lastupdate.dart';
-import 'package:wrtappv2/Screen/homepage/newkomik.dart';
 import 'package:wrtappv2/Screen/homepage/popular.dart';
 import 'package:wrtappv2/Screen/homepage/project.dart';
 import 'package:wrtappv2/Screen/search/searchpage.dart';
-import 'package:wrtappv2/const/abstract.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:wrtappv2/controller/splash_controller.dart';
+import 'detailpage.dart';
 import 'homepage/scrapdata.dart';
+import 'package:flutter_fadein/flutter_fadein.dart';
+import 'carousel.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -21,72 +27,60 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   var dataSrc = Get.find<ScrapHome>();
-  var konst = Get.find<Konst>();
   var isLoading = false.obs;
+  var splashC = Get.find<SplashC>();
 
 // pj variable
-
-  var _titlePj = [].obs;
-  var _linkPj = [].obs;
-  var _imagePj = [].obs;
-  var _chaptersPj = [].obs;
+  final project = [].obs;
 
 // popular variable
-  var _title = [].obs;
-  var _link = [].obs;
-  var _image = [].obs;
-  var _chapters = [].obs;
-  var _skor = [].obs;
-  var _hot = [].obs;
+  final popular = [].obs;
 
   // latest
-  var _titleLU = [].obs;
-  var _chaptersLU = [].obs;
-  var _chapters_urlLU = [].obs;
-  var _imageLU = [].obs;
-  var _timeLU = [].obs;
+  final latest = [].obs;
 
-  var _titleNK = [].obs;
-  var _genreNK = [].obs;
-  var _yearNK = [].obs;
-  var _imageNK = [].obs;
-  var _urlNK = [].obs;
+  Future<void> setupInteractedMessage() async {
+    // Get any messages which caused the application to open from
+    // a terminated state.
+    RemoteMessage? initialMessage =
+        await FirebaseMessaging.instance.getInitialMessage();
+
+    // If the message also contains a data property with a "type" of "chat",
+    // navigate to a chat screen
+    if (initialMessage != null) {
+      _handleMessage(initialMessage);
+    }
+
+    // Also handle any interaction when the app is in the background via a
+    // Stream listener
+    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
+  }
+
+  void _handleMessage(RemoteMessage message) {
+    Get.to(
+      () => DetailPage(
+        slug: message.data['slug'].toString().split('-chapter-')[0],
+        url: message.data['url'],
+      ),
+      transition: Transition.fadeIn,
+    );
+  }
 
   getData() async {
-    // run syncrhonous
-    _titlePj.value = dataSrc.titlePj;
-    _linkPj.value = dataSrc.chaptersUrlPj;
-    _imagePj.value = dataSrc.imagePj;
-    _chaptersPj.value = dataSrc.chaptersPj;
-    _title.value = dataSrc.title;
-    _link.value = dataSrc.chaptersUrl;
-    _image.value = dataSrc.image;
-    _chapters.value = dataSrc.chapters;
-    _skor.value = dataSrc.skor;
-    _titleLU.value = dataSrc.titleLU;
-    _chaptersLU.value = dataSrc.chaptersLU;
-    _chapters_urlLU.value = dataSrc.chaptersUrlLU;
-    _imageLU.value = dataSrc.imageLU;
-    _timeLU.value = dataSrc.timeLU;
-    _titleNK.value = dataSrc.titleNK;
-    _genreNK.value = dataSrc.genreNK;
-    _yearNK.value = dataSrc.yearNK;
-    _imageNK.value = dataSrc.imageNK;
-    _urlNK.value = dataSrc.urlNK;
+    project.value = await dataSrc.pjUpdateKomik;
+    popular.value = await dataSrc.popularKomik;
+    latest.value = await dataSrc.latestKomik;
 
-    setState(() {
-      isLoading.value = true;
-    });
+    isLoading.value = true;
   }
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    setupInteractedMessage();
+
     getData();
-    konst.getStatusServer();
-    konst.validationDeviceID();
-    konst.cekUpdate();
   }
 
   @override
@@ -121,67 +115,76 @@ class _HomePageState extends State<HomePage> {
               )),
         ),
         body: (isLoading.value)
-            ? SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                scrollDirection: Axis.vertical,
-                child: Column(
-                  children: [
-                    Popular(
-                      title: _title,
-                      url: _link,
-                      image: _image,
-                      chapters: _chapters,
-                      skor: _skor,
-                      hot: _hot,
-                    ),
-                    GestureDetector(
-                      onTap: () async {
-                        launch("https://trakteer.id/WorldRomanceTranslation");
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(15),
-                        child: CachedNetworkImage(
-                          cacheManager: CacheManager(Config(
-                            "trakteer",
-                            stalePeriod: const Duration(days: 7),
-                          )),
-                          imageUrl:
-                              "https://cdn3.wrt.my.id/wrt.my.id/07/30/navbar-logo-lite-beta.png",
-                          placeholder: (context, url) =>
-                              const Center(child: CircularProgressIndicator()),
-                          errorWidget: (context, url, error) =>
-                              const Icon(Icons.error),
-                          fit: BoxFit.fill,
-                          width: Get.width,
-                        ),
+            ? FadeIn(
+                duration: const Duration(milliseconds: 600),
+                curve: Curves.easeIn,
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  scrollDirection: Axis.vertical,
+                  child: Column(
+                    children: [
+                      const SizedBox(
+                        height: 12,
                       ),
-                    ),
-                    Project(
-                      titlePj: _titlePj,
-                      linkPj: _linkPj,
-                      imagePj: _imagePj,
-                      chaptersPj: _chaptersPj,
-                    ),
-                    LastUpdate(
-                      titleLU: _titleLU,
-                      chaptersLU: _chaptersLU,
-                      linkLU: _chapters_urlLU,
-                      imageLU: _imageLU,
-                      timeLU: _timeLU,
-                    ),
-                    NewerKomik(
-                      title: _titleNK,
-                      genre: _genreNK,
-                      year: _yearNK,
-                      image: _imageNK,
-                      url: _urlNK,
-                    )
-                  ],
+                      const CarouselWithIndicatorDemo(),
+                      (splashC.linkGambar2.value == "")
+                          ? Container()
+                          : Padding(
+                              padding: const EdgeInsets.all(5),
+                              child: CachedNetworkImage(
+                                cacheManager: CacheManager(Config(
+                                  splashC.linkGambar.value,
+                                  stalePeriod: const Duration(days: 7),
+                                )),
+                                imageUrl: splashC.linkGambar.value,
+                                placeholder: (context, url) => const Center(
+                                    child: CircularProgressIndicator()),
+                                errorWidget: (context, url, error) =>
+                                    const Icon(Icons.error),
+                                fit: BoxFit.fill,
+                                width: Get.width,
+                              ),
+                            ),
+                      Popular(
+                        data: popular,
+                      ),
+                      (splashC.linkGambar.value == "")
+                          ? Container()
+                          : GestureDetector(
+                              onTap: () async {
+                                launch(
+                                    "https://trakteer.id/WorldRomanceTranslation");
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(5),
+                                child: CachedNetworkImage(
+                                  cacheManager: CacheManager(Config(
+                                    splashC.linkGambar.value,
+                                    stalePeriod: const Duration(days: 7),
+                                  )),
+                                  imageUrl: splashC.linkGambar.value,
+                                  placeholder: (context, url) => const Center(
+                                      child: CircularProgressIndicator()),
+                                  errorWidget: (context, url, error) =>
+                                      const Icon(Icons.error),
+                                  fit: BoxFit.fill,
+                                  width: Get.width,
+                                ),
+                              ),
+                            ),
+                      Project(
+                        data: project,
+                      ),
+                      LastUpdate(
+                        data: latest,
+                      ),
+                    ],
+                  ),
                 ),
               )
-            : const Center(
-                child: CircularProgressIndicator(),
-              ),
+            : Center(
+                child: LoadingAnimationWidget.staggeredDotsWave(
+                    color: Theme.of(context).primaryColor, size: 60)),
       ),
     );
   }
