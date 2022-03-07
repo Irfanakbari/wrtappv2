@@ -9,6 +9,8 @@ class BmModel {
     await Hive.initFlutter();
   }
 
+  var server = Get.put(RestoreBookmark());
+
   BmModel() {
     initHive();
     getAllBookmark();
@@ -71,9 +73,7 @@ class BmModel {
   Future saveToServer() async {
     var box = await Hive.openBox('bookmarks');
     var data = box.values.toList();
-    var server = RestoreBookmark();
+
     await server.backupBookmark(data);
-    return Get.snackbar("Berhasil", "Data bookmark berhasil diupload ke server",
-        snackPosition: SnackPosition.TOP, duration: const Duration(seconds: 2));
   }
 }

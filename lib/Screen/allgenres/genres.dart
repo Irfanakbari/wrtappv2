@@ -1,10 +1,10 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_fadein/flutter_fadein.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:html/parser.dart' as parser;
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:wrtappv2/Screen/allgenres/viewgenre.dart';
 
@@ -19,9 +19,10 @@ class _AllGenresState extends State<AllGenres> {
   RxList genres = [].obs;
   RxList urlGenre = [].obs;
   RxBool isLoading = true.obs;
+  var baseUrl = dotenv.env['BASE_URL_API'];
 
   Future<void> scrapGenre() async {
-    var url = 'https://api.wrt.my.id/api/genre';
+    var url = baseUrl! + 'genre';
     var response = await http.get(Uri.parse(url));
     var data = json.decode(response.body);
     var genres = data['data'];

@@ -14,7 +14,7 @@ import 'package:wrtappv2/Screen/bookmark/BmModel.dart';
 import 'package:wrtappv2/Screen/homepage/scrapdata.dart';
 import 'package:wrtappv2/Screen/reading/reading.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:wrtappv2/const/function.dart';
+import 'package:wrtappv2/controller/splash_controller.dart';
 
 class DetailPage extends StatefulWidget {
   final String slug;
@@ -32,6 +32,7 @@ class _DetailPageState extends State<DetailPage> {
   RxString postID = "".obs;
   var scrapdata = Get.find<ScrapHome>();
   var prefs;
+  var splashC = Get.find<SplashC>();
   RxBool historyStatus = true.obs;
   // var cover = "";
   var historyData = [].obs;
@@ -39,7 +40,6 @@ class _DetailPageState extends State<DetailPage> {
   var bm = Get.find<BmModel>();
   Rx isBookmark = false.obs;
   Rx<String> bookm = 'Bookmark'.obs;
-  final _konst = Get.find<Konst>();
 
   Stream getHistory() async* {
     while (true) {
@@ -167,7 +167,8 @@ class _DetailPageState extends State<DetailPage> {
                         filter:
                             ImageFilter.blur(sigmaX: _sigmaX, sigmaY: _sigmaY),
                         child: Container(
-                          color: const Color.fromRGBO(86, 84, 158, 1)
+                          color: Theme.of(context)
+                              .primaryColor
                               .withOpacity(_opacity),
                         ),
                       ),
@@ -479,9 +480,34 @@ class _DetailPageState extends State<DetailPage> {
                                     ),
                                   ),
                                 ),
-                                const SizedBox(
-                                  height: 5,
-                                ),
+                                (splashC.linkGambardetail.value == "")
+                                    ? const SizedBox(
+                                        height: 5,
+                                      )
+                                    : Padding(
+                                        padding: const EdgeInsets.only(
+                                            top: 8,
+                                            bottom: 8,
+                                            left: 5,
+                                            right: 5),
+                                        child: CachedNetworkImage(
+                                          cacheManager: CacheManager(Config(
+                                            splashC.linkGambardetail.value,
+                                            stalePeriod:
+                                                const Duration(days: 7),
+                                          )),
+                                          imageUrl:
+                                              splashC.linkGambardetail.value,
+                                          placeholder: (context, url) =>
+                                              const Center(
+                                                  child:
+                                                      CircularProgressIndicator()),
+                                          errorWidget: (context, url, error) =>
+                                              const Icon(Icons.error),
+                                          fit: BoxFit.fill,
+                                          width: Get.width,
+                                        ),
+                                      ),
                                 Container(
                                   width: double.infinity,
                                   decoration: const BoxDecoration(

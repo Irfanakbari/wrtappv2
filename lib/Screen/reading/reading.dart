@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -7,8 +6,9 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wrtappv2/Screen/Comment/disqus.dart';
 import 'package:wrtappv2/Screen/homepage/scrapdata.dart';
-import 'package:wrtappv2/const/function.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:wrtappv2/controller/report_controller.dart';
+import 'package:wrtappv2/controller/setting_controller.dart';
 
 class ReadingPage extends StatefulWidget {
   final String postId;
@@ -42,9 +42,11 @@ class _ReadingPageState extends State<ReadingPage> {
   late TapDownDetails _doubleTapDetails;
   var chapSlug = [];
   var judul = "no";
-  var konst = Get.put<Konst>(Konst());
   var scrapData = Get.find<ScrapHome>();
   RxBool isLoading = true.obs;
+  var settingC = Get.find<SettingC>();
+  var reportC = Get.put(ReportC());
+
   scrapingData() async {
     await scrapData.getReadKomik(widget.slug).then((value) {
       setState(() {
@@ -149,7 +151,7 @@ class _ReadingPageState extends State<ReadingPage> {
                               },
                               imageUrl: imagesr[index] +
                                   '?quality=' +
-                                  konst.readQuality.value,
+                                  settingC.readQuality.value,
                               cacheManager: CacheManager(Config(
                                 imagesr[index],
                                 stalePeriod: const Duration(hours: 1),
@@ -230,7 +232,7 @@ class _ReadingPageState extends State<ReadingPage> {
                                 FlatButton(
                                   child: const Text('Ya'),
                                   onPressed: () {
-                                    konst.sendChapterReport(widget.link);
+                                    reportC.sendChapterReport(widget.link);
                                     Get.back();
                                   },
                                 ),

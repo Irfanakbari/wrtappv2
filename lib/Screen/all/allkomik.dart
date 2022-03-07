@@ -48,7 +48,7 @@ class _AllKomikState extends State<AllKomik> {
         appBar: AppBar(
           toolbarHeight: 70,
           title: const Text("Daftar Komik"),
-          actions: [
+          actions: const [
             // InkWell(
             //   onTap: () {},
             //   child: Padding(

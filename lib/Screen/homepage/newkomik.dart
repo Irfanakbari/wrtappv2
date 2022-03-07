@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_core/get_core.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
-import 'package:wrtappv2/Screen/detailpage.dart';
 
 class NewerKomik extends StatefulWidget {
   final List title;

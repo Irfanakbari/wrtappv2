@@ -16,6 +16,21 @@ class LogPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
+              Text('Versi 2.7.0',
+                  style: GoogleFonts.roboto(
+                      fontSize: 25, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 10),
+              Text('- Fitur sinkron data bookmark dengan akun website',
+                  style: GoogleFonts.roboto(fontSize: 18)),
+              Text('- Penambahan carousel di homepage',
+                  style: GoogleFonts.roboto(fontSize: 18)),
+              Text('- Perbaikan notifikasi',
+                  style: GoogleFonts.roboto(fontSize: 18)),
+              Text('- Perbaikan sistem',
+                  style: GoogleFonts.roboto(fontSize: 18)),
+              Text('- Peningkatan minimum SDK Version ke 29',
+                  style: GoogleFonts.roboto(fontSize: 18)),
+              const SizedBox(height: 20),
               Text('Versi 2.6.1',
                   style: GoogleFonts.roboto(
                       fontSize: 25, fontWeight: FontWeight.bold)),
