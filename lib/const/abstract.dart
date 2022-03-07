@@ -172,7 +172,7 @@ class Konst {
 
   Future<void> sendReport(String message) async {
     var url =
-        "https://discord.com/api/webhooks/930338967822422016/MOXMqhVzDlXFIj1Kz4W8RK_Tr02M9_g_MLZZxxGWMBYIhEwcih13jZfpBp3Ne0xJs9tO";
+        "null";
     var response = await http.post(Uri.parse(url),
         headers: {
           "Content-Type": "application/json",
@@ -242,7 +242,7 @@ class Konst {
     var isp = data2['isp'].toString();
 
     var url =
-        "https://discord.com/api/webhooks/930339315609911337/7ttcd5pdJyc4AwUNFSFdzKERBOL9sDDsAG1HSYJbSiAE36UHjisaFgDT8873rdZQe7pB";
+        "null";
     var response = await http.post(Uri.parse(url),
         headers: {
           "Content-Type": "application/json",
