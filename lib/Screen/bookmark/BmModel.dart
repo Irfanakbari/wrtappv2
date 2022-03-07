@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:get/get.dart';
-import 'package:wrtappv2/Screen/reading/sys/ModelRestore.dart';
+import 'package:wrtappv2/Screen/reading/sys/modelrestore.dart';
 
 class BmModel {
   RxList bmList = [].obs;
