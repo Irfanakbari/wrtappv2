@@ -30,6 +30,7 @@ class SplashC extends GetxController {
   var notifC = Get.put(NotifC());
   var authC = Get.put(AuthC());
   var settingC = Get.put(SettingC());
+  var home = Get.put(ScrapHome());
   var linkGambar = "".obs;
   var linkGambar2 = "".obs;
   var linkGambardetail = "".obs;
@@ -62,10 +63,9 @@ class SplashC extends GetxController {
     linkGambar.value = snapshot.value.toString();
     linkGambar2.value = topBanner.value.toString();
     linkGambardetail.value = detail.value.toString();
-    var home = Get.put(ScrapHome());
 
     isConfig.value = "Loading Config";
-    await home.getData();
+    // await home.getData();
 
     validationDeviceID();
     await cekUpdate();

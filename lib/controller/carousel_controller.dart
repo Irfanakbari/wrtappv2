@@ -11,10 +11,10 @@ class CarouselC extends GetxController {
   @override
   void onInit() {
     getSlide();
-    // TODO: implement onInit
     super.onInit();
   }
 
+  // Get data slider homepage
   void getSlide() async {
     var url = "https://api.wrt.my.id/api/slider";
     await http.get(Uri.parse(url)).then((response) {

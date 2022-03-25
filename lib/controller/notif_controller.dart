@@ -6,7 +6,8 @@ import 'package:wrtappv2/Screen/detailpage.dart';
 import 'package:is_first_run/is_first_run.dart';
 
 class NotifC extends GetxController {
-  RxBool notifStatus = false.obs;
+  RxBool notifStatus = true.obs;
+
 
   void changeStatusNotif() async {
     var prefs = await SharedPreferences.getInstance();
@@ -22,6 +23,7 @@ class NotifC extends GetxController {
     }
   }
 
+  // Onesignal notification handler
   Future<void> notifHandler() async {
     // Onesignal init
     OneSignal.shared.setAppId("be7dac02-14fd-470f-bf7d-5ba24e08bdd2");
@@ -53,15 +55,15 @@ class NotifC extends GetxController {
     });
   }
 
+  // Notification cek when first run app
   Future notifCek() async {
     bool firstRun = await IsFirstRun.isFirstRun();
     var prefs = await SharedPreferences.getInstance();
     var notif = prefs.getBool('notifStatus');
     // if notif is null, subscribe Onesignal
     if (firstRun) {
-      notifStatus.value = false;
-      prefs.setBool('notifStatus', false);
-      FirebaseMessaging.instance.subscribeToTopic('all');
+      notifStatus.value = true;
+      prefs.setBool('notifStatus', true);
     } else {
       notifStatus.value = notif!;
     }

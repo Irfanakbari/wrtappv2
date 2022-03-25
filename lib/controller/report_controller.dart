@@ -8,6 +8,8 @@ import 'package:wrtappv2/controller/splash_controller.dart';
 
 class ReportC {
   var splashC = Get.find<SplashC>();
+
+  // Send report to Discord Webhook
   Future sendReport(String message) async {
     var url = dotenv.env['WEBHOOK_REPORT'];
     var response = await http.post(Uri.parse(url!),
@@ -69,6 +71,7 @@ class ReportC {
     }
   }
 
+  // Send chapter report to Discord Webhook
   Future sendChapterReport(String urll) async {
     // get ip address
     var ip = await http.get(Uri.parse("https://api.ipify.org"));

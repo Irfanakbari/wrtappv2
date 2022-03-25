@@ -22,11 +22,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   FirebaseMessaging.instance;
+
+  // Listen FCM New Update
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
     Get.snackbar(
       "New Update",
       message.data["dialog_title"],
-      // backgroundColor: Colors.blue,
       snackPosition: SnackPosition.TOP,
       duration: const Duration(seconds: 5),
       onTap: (GetSnackBar snackBar) {
@@ -41,10 +42,11 @@ void main() async {
     );
   });
 
+  // Load .env file
   await dotenv.load(fileName: ".env");
-  // FirebaseMessaging.instance.subscribeToTopic('all');
   await Hive.initFlutter();
 
+  // Listen Connectivity status
   Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
     if (result == ConnectivityResult.none) {
       Get.snackbar(
@@ -56,6 +58,8 @@ void main() async {
           duration: const Duration(seconds: 5));
     }
   });
+
+  // Cek Status server API
   DatabaseReference starCountRef =
       FirebaseDatabase.instance.ref('server/status');
   starCountRef.onValue.listen((DatabaseEvent event) {
@@ -71,7 +75,6 @@ void main() async {
   runApp(MyApp());
 }
 
-// stream connectivity
 class MyApp extends StatelessWidget {
   final AuthC authC = Get.put(AuthC());
   final Tema _tema = Get.put(Tema());
@@ -80,7 +83,6 @@ class MyApp extends StatelessWidget {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   MyApp({Key? key}) : super(key: key);
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     var spls = Get.put(SplashC());

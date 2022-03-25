@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as parse;
 import 'package:get/get.dart';
 
-class ScrapHome {
+class ScrapHome extends GetxController {
   // popular
   final popular = [].obs;
 
@@ -45,6 +45,10 @@ class ScrapHome {
 
   var url = dotenv.env['BASE_URL_API'];
 
+  ScrapHome() {
+    getData();
+  }
+
   Future<void> delData() async {
     popular.value = [];
     pjUpdate.value = [];
@@ -65,7 +69,8 @@ class ScrapHome {
 
     if (response.statusCode == 200) {
       var res = json.decode(response.body);
-      var data = res['data'];
+      var data = await res['data'];
+      print("dipanggil");
 
       // Popular
       for (var i = 0; i < data['populer'].length - 1; i++) {
@@ -91,6 +96,7 @@ class ScrapHome {
           duration: const Duration(seconds: 5),
           margin: const EdgeInsets.all(10));
     }
+    print(pjUpdate.length);
   }
 
   Future<List> getNewList(int page) async {
