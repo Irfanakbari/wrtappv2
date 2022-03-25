@@ -31,6 +31,7 @@ class AuthC extends GetxController {
     }
   }
 
+  // Init Firebase
   static Future<FirebaseApp> initializeFirebase() async {
     FirebaseApp firebaseApp = await Firebase.initializeApp();
 
@@ -66,7 +67,7 @@ class AuthC extends GetxController {
     return _auth.currentUser?.photoURL;
   }
 
-//  sign in with email and password
+  //  sign in with email and password (not use)
   Future<dynamic> signInWithEmailPassword(String email, String password) async {
     try {
       UserCredential userCredential = await FirebaseAuth.instance

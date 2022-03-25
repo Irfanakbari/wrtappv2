@@ -322,21 +322,21 @@ class Setting extends StatelessWidget {
                                 CupertinoActionSheetAction(
                                   child: const Text("High"),
                                   onPressed: () async {
-                                    settingC.setReadQuality("High");
+                                    settingC.setReadQuality("80");
                                     Get.back();
                                   },
                                 ),
                                 CupertinoActionSheetAction(
                                   child: const Text("Med"),
                                   onPressed: () async {
-                                    settingC.setReadQuality("Med");
+                                    settingC.setReadQuality("40");
                                     Get.back();
                                   },
                                 ),
                                 CupertinoActionSheetAction(
                                   child: const Text("Low"),
                                   onPressed: () async {
-                                    settingC.setReadQuality("Low");
+                                    settingC.setReadQuality("20");
                                     Get.back();
                                   },
                                 )
@@ -376,11 +376,28 @@ class Setting extends StatelessWidget {
                                       Padding(
                                         padding:
                                             const EdgeInsets.only(right: 8),
-                                        child: Text(
-                                          settingC.readQuality.value,
-                                          style: const TextStyle(
-                                              fontSize: 14, color: Colors.grey),
-                                        ),
+                                        child:
+                                            (settingC.readQuality.value == "80")
+                                                ? const Text(
+                                                    "High",
+                                                    style: const TextStyle(
+                                                        color: Colors.grey,
+                                                        fontSize: 14),
+                                                  )
+                                                : (settingC.readQuality.value ==
+                                                        "40")
+                                                    ? const Text(
+                                                        "Med",
+                                                        style: const TextStyle(
+                                                            color: Colors.grey,
+                                                            fontSize: 14),
+                                                      )
+                                                    : const Text(
+                                                        "Low",
+                                                        style: const TextStyle(
+                                                            color: Colors.grey,
+                                                            fontSize: 14),
+                                                      ),
                                       ),
                                     ],
                                   )
